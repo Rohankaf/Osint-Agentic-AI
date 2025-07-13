@@ -1,0 +1,23 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "test.com"
+    }
+  },
+  {
+    "tool": "subfinder",
+    "inputs": {
+      "domain": "test.com"
+    }
+  },
+  {
+    "tool": "dnsx",
+    "inputs": {
+      "domains": [
+        "sub1.test.com",
+        "sub2.test.com"
+      ]
+    }
+  }
+]

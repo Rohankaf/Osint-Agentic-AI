@@ -1,0 +1,29 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "tesla.com",
+      "capabilities": [
+        "Email Harvesting",
+        "Subdomain Discovery",
+        "Hostnames & DNS"
+      ]
+    }
+  },
+  {
+    "tool": "shodan",
+    "inputs": {
+      "domain": "tesla.com",
+      "capabilities": [
+        "Open Ports",
+        "Service Banners",
+        "CVEs",
+        "Hostnames / Domains",
+        "HTTP Details",
+        "GeoIP Data",
+        "SSL Cert Info",
+        "Device Info"
+      ]
+    }
+  }
+]

@@ -1,0 +1,559 @@
+{
+  "user_prompt": "full recon on netflix.com",
+  "tool_plan_history": [
+    [
+      {
+        "tool": "theHarvester",
+        "inputs": {
+          "domain": "netflix.com"
+        }
+      },
+      {
+        "tool": "subfinder",
+        "inputs": {
+          "domain": "netflix.com"
+        }
+      },
+      {
+        "tool": "dnsx",
+        "inputs": {
+          "domains": [
+            "netflix.com"
+          ]
+        }
+      },
+      {
+        "tool": "whois",
+        "inputs": {
+          "target": "netflix.com"
+        }
+      }
+    ],
+    [
+      {
+        "tool": "theHarvester",
+        "inputs": {
+          "domain": "netflix.com"
+        }
+      },
+      {
+        "tool": "subfinder",
+        "inputs": {
+          "domain": "netflix.com"
+        }
+      },
+      {
+        "tool": "whois",
+        "inputs": {
+          "target": "netflix.com"
+        }
+      },
+      {
+        "tool": "shodan",
+        "inputs": {
+          "query": "23.192.228.80"
+        }
+      }
+    ],
+    [
+      {
+        "tool": "theHarvester",
+        "inputs": {
+          "domain": "netflix.com"
+        }
+      },
+      {
+        "tool": "subfinder",
+        "inputs": {
+          "domain": "netflix.com"
+        }
+      },
+      {
+        "tool": "whois",
+        "inputs": {
+          "target": "netflix.com"
+        }
+      }
+    ]
+  ],
+  "tool_results_history": [
+    [
+      {
+        "tool": "theHarvester",
+        "inputs": {
+          "domain": "netflix.com"
+        },
+        "result": {
+          "tool": "theHarvester",
+          "domain": "netflix.com",
+          "emails": [],
+          "hosts": [
+            "02e-8-38-137.prod.ftl.netflix.com",
+            "0f730c1b-6b50-4035-9165-763ac4e53f85.darnuid.netflix.com",
+            "1.dig.netflix.com:176.96.182.1",
+            "10-1-2-56.prod.ftl.netflix.com",
+            "106flex.netflix.com:185.198.26.177",
+            "160-8-38-137.prod.ftl.netflix.com",
+            "2-2-7-61.prod.ftl.netflix.com",
+            "2ge-2-6-252.prod.ftl.netflix.com",
+            "5-3-2-6.prod.ftl.netflix.com",
+            "54e-1-3-7.prod.ftl.netflix.com"
+          ]
+        }
+      },
+      {
+        "tool": "subfinder",
+        "inputs": {
+          "domain": "netflix.com"
+        },
+        "result": {
+          "tool": "subfinder",
+          "domain": "netflix.com",
+          "subdomains": [
+            "jiranrd.netflix.com",
+            "tcp-9-32-32.prod.ftl.netflix.com",
+            "stage.netflix.com",
+            "moviecontrol.netflix.com",
+            "bamboo.netflix.com",
+            "lg-corp.netflix.com",
+            "ccs.eu-west-1.prodaa.netflix.com",
+            "prod.http1.us-east-1.prodaa.netflix.com",
+            "oca-api.us-east-1.prodaa.netflix.com",
+            "api-user.us-west-2.prodaa.netflix.com",
+            "csfwfe02.dc2.corp.netflix.com",
+            "movies3.netflix.com",
+            "csrt-agg02.prod1.netflix.com",
+            "fe0-0.csfw-teradata.prod1.netflix.com",
+            "contactus.euwest-1.prodaa.netflix.com",
+            "ackbar.netflix.com",
+            "signup-dse.netflix.com",
+            "webmail.corp.netflix.com",
+            "dnm.prod.eu-west-1.prodaa.netflix.com",
+            "survey.netflix.com"
+          ]
+        }
+      },
+      {
+        "tool": "dnsx",
+        "inputs": {
+          "domains": [
+            "netflix.com"
+          ]
+        },
+        "result": {
+          "tool": "dnsx",
+          "domains": [
+            "netflix.com"
+          ],
+          "results": [
+            {
+              "domain": "example.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.192.228.80\u001b[0m"
+            },
+            {
+              "domain": "example.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m96.7.128.175\u001b[0m"
+            },
+            {
+              "domain": "example.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m96.7.128.198\u001b[0m"
+            },
+            {
+              "domain": "example.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.215.0.136\u001b[0m"
+            },
+            {
+              "domain": "example.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.192.228.84\u001b[0m"
+            },
+            {
+              "domain": "example.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.215.0.138\u001b[0m"
+            },
+            {
+              "domain": "test.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m3.18.255.247\u001b[0m"
+            },
+            {
+              "domain": "test.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m34.224.149.186\u001b[0m"
+            },
+            {
+              "domain": "shopify.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.227.38.33\u001b[0m"
+            },
+            {
+              "domain": "test.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m34.224.149.186\u001b[0m"
+            },
+            {
+              "domain": "test.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m3.18.255.247\u001b[0m"
+            },
+            {
+              "domain": "shopify.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.227.38.33\u001b[0m"
+            },
+            {
+              "domain": "neflix.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m18.236.7.30\u001b[0m"
+            },
+            {
+              "domain": "neflix.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m34.252.74.1\u001b[0m"
+            },
+            {
+              "domain": "neflix.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m204.236.236.127\u001b[0m"
+            },
+            {
+              "domain": "neflix.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m34.218.19.240\u001b[0m"
+            },
+            {
+              "domain": "neflix.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m52.31.48.193\u001b[0m"
+            },
+            {
+              "domain": "neflix.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m107.20.175.192\u001b[0m"
+            },
+            {
+              "domain": "neflix.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m50.17.247.9\u001b[0m"
+            },
+            {
+              "domain": "neflix.com",
+              "ip": "\u001b[35mA\u001b[0m] [\u001b[32m44.226.113.145\u001b[0m"
+            }
+          ]
+        }
+      },
+      {
+        "tool": "whois",
+        "inputs": {
+          "target": "netflix.com"
+        },
+        "result": {
+          "tool": "whois",
+          "target": "netflix.com",
+          "results": {
+            "domain_name": "NETFLIX.COM",
+            "registrar": "MarkMonitor, Inc.",
+            "registrar_url": "http://www.markmonitor.com",
+            "reseller": null,
+            "whois_server": "whois.markmonitor.com",
+            "referral_url": null,
+            "updated_date": [
+              "2023-10-09T11:01:36",
+              "2024-08-02T02:17:33+00:00"
+            ],
+            "creation_date": [
+              "1997-11-11T05:00:00",
+              "1997-11-11T05:00:00+00:00"
+            ],
+            "expiration_date": [
+              "2025-11-10T05:00:00",
+              "2025-11-10T00:00:00+00:00"
+            ],
+            "name_servers": [
+              "NS-1372.AWSDNS-43.ORG",
+              "NS-1984.AWSDNS-56.CO.UK",
+              "NS-659.AWSDNS-18.NET",
+              "NS-81.AWSDNS-10.COM"
+            ],
+            "status": [
+              "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+              "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+              "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited",
+              "serverDeleteProhibited https://icann.org/epp#serverDeleteProhibited",
+              "serverTransferProhibited https://icann.org/epp#serverTransferProhibited",
+              "serverUpdateProhibited https://icann.org/epp#serverUpdateProhibited",
+              "clientUpdateProhibited (https://www.icann.org/epp#clientUpdateProhibited)",
+              "clientTransferProhibited (https://www.icann.org/epp#clientTransferProhibited)",
+              "clientDeleteProhibited (https://www.icann.org/epp#clientDeleteProhibited)",
+              "serverUpdateProhibited (https://www.icann.org/epp#serverUpdateProhibited)",
+              "serverTransferProhibited (https://www.icann.org/epp#serverTransferProhibited)",
+              "serverDeleteProhibited (https://www.icann.org/epp#serverDeleteProhibited)"
+            ],
+            "emails": [
+              "abusecomplaints@markmonitor.com",
+              "whoisrequest@markmonitor.com"
+            ],
+            "dnssec": "unsigned",
+            "name": null,
+            "org": "Netflix, Inc.",
+            "address": null,
+            "city": null,
+            "state": null,
+            "registrant_postal_code": null,
+            "country": "US"
+          }
+        }
+      }
+    ],
+    [
+      {
+        "tool": "shodan",
+        "inputs": {
+          "query": "23.192.228.80"
+        },
+        "result": {
+          "error": "IP is required for Shodan."
+        }
+      }
+    ],
+    []
+  ],
+  "reflections": [
+    {
+      "type": "plan",
+      "reflection": {
+        "status": "fallback",
+        "raw": "{\n  \"new_plan\": [\n    {\n      \"tool\": \"theHarvester\",\n      \"inputs\": {\n        \"domain\": \"netflix.com\"\n      }\n    },\n    {\n      \"tool\": \"subfinder\",\n      \"inputs\": {\n        \"domain\": \"netflix.com\"\n      }\n    },\n    {\n      \"tool\": \"dnsx\",\n      \"inputs\": {\n        \"domains\": [\n          \"netflix.com\"\n        ]\n      }\n    },\n    {\n      \"tool\": \"whois\",\n      \"inputs\": {\n        \"target\": \"netflix.com\"\n      }\n    },\n    {\n      \"tool\": \"shodan\",\n      \"inputs\": {\n        \"query\": \"netflix.com\"\n      }\n    }\n  ]\n}\n\nExplanation:\nThe current plan is missing the use of the Shodan tool, which could provide additional information about the target domain, such as open ports, services running, and potential vulnerabilities. Shodan is a powerful tool for gathering information about a target and should be included in the reconnaissance process.\n\nThe new plan includes the addition of the Shodan tool, which will help to provide a more comprehensive recon on the netflix.com domain."
+      }
+    },
+    {
+      "type": "result",
+      "loop": 1,
+      "reflection": {
+        "status": "needs_more",
+        "reason": "The current plan has not yet provided a complete picture of the netflix.com domain. While the theHarvester, subfinder, dnsx, and whois tools have provided some useful information, such as subdomains, IP addresses, and domain registration details, there are still some gaps that need to be filled.",
+        "next_plan": [
+          {
+            "tool": "theHarvester",
+            "inputs": {
+              "domain": "netflix.com"
+            }
+          },
+          {
+            "tool": "subfinder",
+            "inputs": {
+              "domain": "netflix.com"
+            }
+          },
+          {
+            "tool": "dnsx",
+            "inputs": {
+              "domains": [
+                "netflix.com"
+              ]
+            }
+          },
+          {
+            "tool": "whois",
+            "inputs": {
+              "target": "netflix.com"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "23.192.228.80"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m107.20.175.192\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m3.18.255.247\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m23.215.0.136\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m23.227.38.33\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m18.236.7.30\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m52.31.48.193\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m23.215.0.138\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m50.17.247.9\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m44.226.113.145\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m34.252.74.1\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m34.224.149.186\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m96.7.128.175\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m23.192.228.80\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m34.218.19.240\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m23.192.228.84\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m204.236.236.127\u001b[0m"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "\u001b[35mA\u001b[0m] [\u001b[32m96.7.128.198\u001b[0m"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "plan",
+      "reflection": {
+        "status": "fallback",
+        "raw": "{\n  \"new_plan\": [\n    {\n      \"tool\": \"theHarvester\",\n      \"inputs\": {\n        \"domain\": \"netflix.com\"\n      }\n    },\n    {\n      \"tool\": \"subfinder\",\n      \"inputs\": {\n        \"domain\": \"netflix.com\"\n      }\n    },\n    {\n      \"tool\": \"dnsx\",\n      \"inputs\": {\n        \"domains\": [\n          \"netflix.com\"\n        ]\n      }\n    },\n    {\n      \"tool\": \"whois\",\n      \"inputs\": {\n        \"target\": \"netflix.com\"\n      }\n    },\n    {\n      \"tool\": \"shodan\",\n      \"inputs\": {\n        \"query\": \"netflix.com\"\n      }\n    }\n  ]\n}\n\nExplanation:\nThe current plan is missing the use of the Shodan tool, which could provide additional information about the target domain, such as open ports, services running, and potential vulnerabilities. Shodan is a powerful tool for gathering information about a target and should be included in the reconnaissance process.\n\nThe new plan includes the addition of the Shodan tool, which will help to provide a more comprehensive recon on the netflix.com domain."
+      }
+    },
+    {
+      "type": "result",
+      "loop": 2,
+      "reflection": {
+        "status": "needs_more",
+        "reason": "The current plan has not yet provided a complete picture of the netflix.com domain. While the theHarvester, subfinder, dnsx, and whois tools have provided some useful information, such as subdomains, IP addresses, and domain registration details, there are still some gaps that need to be filled.",
+        "next_plan": [
+          {
+            "tool": "theHarvester",
+            "inputs": {
+              "domain": "netflix.com"
+            }
+          },
+          {
+            "tool": "subfinder",
+            "inputs": {
+              "domain": "netflix.com"
+            }
+          },
+          {
+            "tool": "dnsx",
+            "inputs": {
+              "domains": [
+                "netflix.com"
+              ]
+            }
+          },
+          {
+            "tool": "whois",
+            "inputs": {
+              "target": "netflix.com"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "netflix.com"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "plan",
+      "reflection": {
+        "status": "fallback",
+        "raw": "{\n  \"new_plan\": [\n    {\n      \"tool\": \"theHarvester\",\n      \"inputs\": {\n        \"domain\": \"netflix.com\"\n      }\n    },\n    {\n      \"tool\": \"subfinder\",\n      \"inputs\": {\n        \"domain\": \"netflix.com\"\n      }\n    },\n    {\n      \"tool\": \"dnsx\",\n      \"inputs\": {\n        \"domains\": [\n          \"netflix.com\"\n        ]\n      }\n    },\n    {\n      \"tool\": \"whois\",\n      \"inputs\": {\n        \"target\": \"netflix.com\"\n      }\n    },\n    {\n      \"tool\": \"shodan\",\n      \"inputs\": {\n        \"query\": \"netflix.com\"\n      }\n    }\n  ]\n}\n\nExplanation:\nThe current plan is missing the use of the Shodan tool, which could provide additional information about the target domain, such as open ports, services running, and potential vulnerabilities. Shodan is a powerful tool for gathering information about a target and should be included in the reconnaissance process.\n\nThe new plan includes the addition of the Shodan tool, which will help to provide a more comprehensive recon on the netflix.com domain."
+      }
+    },
+    {
+      "type": "result",
+      "loop": 3,
+      "reflection": {
+        "status": "needs_more",
+        "reason": "The current plan has not yet provided a complete picture of the netflix.com domain. While the theHarvester, subfinder, dnsx, and whois tools have provided some useful information, such as subdomains, IP addresses, and domain registration details, there are still some gaps that need to be filled.",
+        "next_plan": [
+          {
+            "tool": "theHarvester",
+            "inputs": {
+              "domain": "netflix.com"
+            }
+          },
+          {
+            "tool": "subfinder",
+            "inputs": {
+              "domain": "netflix.com"
+            }
+          },
+          {
+            "tool": "dnsx",
+            "inputs": {
+              "domains": [
+                "netflix.com"
+              ]
+            }
+          },
+          {
+            "tool": "whois",
+            "inputs": {
+              "target": "netflix.com"
+            }
+          },
+          {
+            "tool": "shodan",
+            "inputs": {
+              "query": "netflix.com"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

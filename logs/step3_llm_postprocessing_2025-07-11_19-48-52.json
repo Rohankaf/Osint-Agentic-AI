@@ -1,0 +1,39 @@
+Here is a summary of the findings from the raw JSON results:
+
+**Subdomains**:
+- log2.ash.shopify.com
+- editions-summer-2025.shopify.com
+- ir.shopify.com
+- d.ssl.shopify.com
+- expert.shopify.com
+- contest.shopify.com
+- security.shopify.com
+- apm.shopify.com
+- app-store-staging-sonic.shopify.com
+- pins.shopify.com
+- log1.ash.shopify.com
+- goochapparel.shopify.com
+- stockroom.shopify.com
+- aisling.shopify.com
+- 98.nat.ash.shopify.com
+- o18.mailer.shopify.com
+- brochure.shopify.com
+- 109.nat.ash.shopify.com
+- cdn2.shopify.com
+- o29.mailer.shopify.com
+
+**Whois Information**:
+- Registrar: MarkMonitor, Inc.
+- Registrant Organization: Shopify Inc.
+- Registrant Country: CA
+- Creation Date: 2005-03-11
+- Expiration Date: 2027-03-11
+- Name Servers: GOLD.FOUNDATIONDNS.COM, GOLD.FOUNDATIONDNS.NET, GOLD.FOUNDATIONDNS.ORG
+- Emails: abusecomplaints@markmonitor.com, whoisrequest@markmonitor.com
+
+**Security-Relevant Findings**:
+- The domain is registered with MarkMonitor, a well-known domain protection service, indicating that Shopify takes security seriously.
+- The domain has several security-related subdomains, such as "security.shopify.com", suggesting Shopify has a dedicated security team and resources.
+- The domain is set to various ICANN statuses that prohibit client-side actions like deletion, transfer, and update, further enhancing the security of the domain.
+
+Overall, the findings suggest that Shopify has a robust security posture, with a well-protected domain, dedicated security resources, and a focus on maintaining the integrity of their online presence.

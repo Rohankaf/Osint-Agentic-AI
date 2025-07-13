@@ -1,0 +1,20 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "shopify.com"
+    }
+  },
+  {
+    "tool": "subfinder",
+    "inputs": {
+      "domain": "shopify.com"
+    }
+  },
+  {
+    "tool": "whois",
+    "inputs": {
+      "target": "shopify.com"
+    }
+  }
+]

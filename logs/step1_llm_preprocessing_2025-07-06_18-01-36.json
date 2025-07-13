@@ -1,0 +1,14 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "tesla.com"
+    }
+  },
+  {
+    "tool": "shodan",
+    "inputs": {
+      "domain": "tesla.com"
+    }
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "netflix.com"
+    }
+  },
+  {
+    "tool": "subfinder",
+    "inputs": {
+      "domain": "netflix.com"
+    }
+  },
+  {
+    "tool": "whois",
+    "inputs": {
+      "target": "netflix.com"
+    }
+  }
+]

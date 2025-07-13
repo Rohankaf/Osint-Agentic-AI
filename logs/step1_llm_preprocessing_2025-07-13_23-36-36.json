@@ -1,0 +1,26 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "paypal.com"
+    }
+  },
+  {
+    "tool": "subfinder",
+    "inputs": {
+      "domain": "paypal.com"
+    }
+  },
+  {
+    "tool": "shodan",
+    "inputs": {
+      "query": "paypal.com"
+    }
+  },
+  {
+    "tool": "whois",
+    "inputs": {
+      "target": "paypal.com"
+    }
+  }
+]

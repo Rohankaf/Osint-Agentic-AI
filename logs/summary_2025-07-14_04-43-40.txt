@@ -1,0 +1,37 @@
+Here is a summary of the findings from the provided raw JSON results:
+
+**theHarvester**:
+- The tool call failed due to a read timeout error.
+
+**Subfinder**:
+- Discovered several subdomains for the netflix.com domain, including:
+  - jiranrd.netflix.com
+  - tcp-9-32-32.prod.ftl.netflix.com
+  - stage.netflix.com
+  - moviecontrol.netflix.com
+  - bamboo.netflix.com
+  - lg-corp.netflix.com
+  - ccs.eu-west-1.prodaa.netflix.com
+  - prod.http1.us-east-1.prodaa.netflix.com
+  - oca-api.us-east-1.prodaa.netflix.com
+  - api-user.us-west-2.prodaa.netflix.com
+  - csfwfe02.dc2.corp.netflix.com
+  - movies3.netflix.com
+  - csrt-agg02.prod1.netflix.com
+  - fe0-0.csfw-teradata.prod1.netflix.com
+  - contactus.euwest-1.prodaa.netflix.com
+  - ackbar.netflix.com
+  - signup-dse.netflix.com
+  - webmail.corp.netflix.com
+  - dnm.prod.eu-west-1.prodaa.netflix.com
+  - survey.netflix.com
+
+**Whois**:
+- The domain netflix.com is registered to Netflix, Inc.
+- The domain was created on 1997-11-11 and is set to expire on 2025-11-10.
+- The domain is protected by various status flags, including clientDeleteProhibited, clientTransferProhibited, and clientUpdateProhibited.
+- The domain's name servers are hosted on AWS DNS servers.
+- The registrant's contact email addresses are abusecomplaints@markmonitor.com and whoisrequest@markmonitor.com.
+- The domain is not using DNSSEC.
+
+Overall, the findings provide a good overview of the Netflix.com domain, including its subdomains, registration details, and security-related information. The subdomains discovered could be worth further investigation for potential security-relevant information or vulnerabilities.

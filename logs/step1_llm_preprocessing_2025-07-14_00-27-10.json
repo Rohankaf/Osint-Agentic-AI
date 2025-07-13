@@ -1,0 +1,28 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "netflix.com"
+    }
+  },
+  {
+    "tool": "subfinder",
+    "inputs": {
+      "domain": "netflix.com"
+    }
+  },
+  {
+    "tool": "dnsx",
+    "inputs": {
+      "domains": [
+        "netflix.com"
+      ]
+    }
+  },
+  {
+    "tool": "whois",
+    "inputs": {
+      "target": "netflix.com"
+    }
+  }
+]

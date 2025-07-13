@@ -1,0 +1,19 @@
+- Relevant hostnames:
+  - api.github.com
+  - atom-installer.github.com
+  - cdn.github.com
+  - codeload.github.com
+  - docs.github.com
+  - gist.github.com
+  - identicons.github.com
+  - jobs.github.com
+  - pkg.github.com
+  - registry.github.com
+  - ssh.github.com
+  - stars.github.com
+  - support.github.com
+- Open ports and services:
+  - Port 80 (HTTP)
+  - Port 443 (HTTPS)
+  - Port 22 (SSH)
+  - Various GitHub-related services (e.g. API, email, SMTP)

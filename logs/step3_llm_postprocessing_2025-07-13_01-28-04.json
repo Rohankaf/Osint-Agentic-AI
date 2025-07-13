@@ -1,0 +1,53 @@
+Here is a summary of the findings from the provided raw JSON results:
+
+**Open Ports, Service Info:**
+- No specific open port or service information was provided in the given data.
+
+**Emails:**
+- No email addresses were found.
+
+**Hostnames:**
+- The theHarvester tool found several hostnames related to the domain "example.com", including:
+  - 0blegit.example.com
+  - 1.example.com
+  - 109199.example.com
+  - 110711.example.com
+  - 112.6.83.173.example.com
+  - 120113.example.com
+  - 1207.example.com
+  - 123.example.com
+  - 123456.example.com
+  - 124644.example.com
+
+**Subdomains:**
+- The subfinder tool found several subdomains related to the domain "example.com", including:
+  - licher.lone.example.com
+  - a20.galushenko.example.com
+  - a321360.example.com
+  - alexey1.bovkun11.example.com
+  - pyat-roz11.example.com
+  - a85210214.example.com
+  - sasha1703-201337.example.com
+  - bigwashing87339.example.com
+  - 69.48.148.213.static.example.com
+  - him41111.example.com
+  - a676536084.example.com
+  - azim231015.example.com
+  - desktop.example.com
+  - vale1.zhdanov.example.com
+  - sasha1703-201340.example.com
+  - test50.example.com
+  - admin61.example.com
+  - geringgrow1.example.com
+  - admin19.example.com
+  - ip-46-254-123-69.example.com
+
+**Organizations, Locations:**
+- The whois lookup for the domain "example.com" did not provide any information about the organization or location.
+
+**Security-Relevant Findings:**
+- The whois lookup for "example.com" showed that the domain is under several restrictions, including "clientDeleteProhibited", "clientTransferProhibited", and "clientUpdateProhibited".
+- The dnsx tool provided some IP addresses associated with the subdomains, but no other security-relevant information was found.
+- The Shodan query for "example.com" returned an error, indicating that an IP address is required for Shodan searches.
+
+Overall, the provided data contains a list of hostnames and subdomains related to the "example.com" domain, but does not reveal any significant security-relevant information.

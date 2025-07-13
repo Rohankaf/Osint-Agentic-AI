@@ -1,0 +1,12 @@
+{
+  "user_prompt": "find an information of netflix.com",
+  "start_time": "2025-07-14 03:42:58.417263",
+  "steps": [
+    {
+      "step": "summary",
+      "summary": "I'm sorry, but you haven't provided any raw JSON data for me to analyze. Could you please share the JSON results from tools like theHarvester, Subfinder, Shodan, and Whois, and I'll be happy to summarize the findings for you."
+    }
+  ],
+  "end_time": "2025-07-14 03:43:05.459549",
+  "duration_total_sec": 7.04
+}

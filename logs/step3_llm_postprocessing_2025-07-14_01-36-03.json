@@ -1,0 +1,39 @@
+Based on the provided JSON results, here is a summary of the findings:
+
+**Open Ports, Service Info, Emails, Hostnames, Orgs, Locations, Subdomains:**
+
+- **Subdomains:**
+  - `jiranrd.netflix.com`
+  - `tcp-9-32-32.prod.ftl.netflix.com`
+  - `stage.netflix.com`
+  - `moviecontrol.netflix.com`
+  - `bamboo.netflix.com`
+  - `lg-corp.netflix.com`
+  - `ccs.eu-west-1.prodaa.netflix.com`
+  - `prod.http1.us-east-1.prodaa.netflix.com`
+  - `oca-api.us-east-1.prodaa.netflix.com`
+  - `api-user.us-west-2.prodaa.netflix.com`
+  - `csfwfe02.dc2.corp.netflix.com`
+  - `movies3.netflix.com`
+  - `csrt-agg02.prod1.netflix.com`
+  - `fe0-0.csfw-teradata.prod1.netflix.com`
+  - `contactus.euwest-1.prodaa.netflix.com`
+  - `ackbar.netflix.com`
+  - `signup-dse.netflix.com`
+  - `webmail.corp.netflix.com`
+  - `dnm.prod.eu-west-1.prodaa.netflix.com`
+  - `survey.netflix.com`
+
+- **Emails:**
+  - `abusecomplaints@markmonitor.com`
+  - `whoisrequest@markmonitor.com`
+
+- **Organization:**
+  - `Netflix, Inc.`
+
+- **Location:**
+  - `US`
+
+**Anything Juicy or Security-Relevant:**
+
+The results do not contain any obviously security-relevant information. The subdomains appear to be related to internal Netflix infrastructure and services, but without further context, it's difficult to determine if any of them are particularly sensitive or vulnerable. The Whois information indicates that Netflix's domain is well-protected, with various locks and prohibitions in place.

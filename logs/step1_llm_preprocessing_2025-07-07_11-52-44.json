@@ -1,0 +1,14 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "github.com"
+    }
+  },
+  {
+    "tool": "shodan",
+    "inputs": {
+      "domain": "github.com"
+    }
+  }
+]

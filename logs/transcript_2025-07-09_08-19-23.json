@@ -1,0 +1,56 @@
+{
+  "user_prompt": "find domain nd ip of paypal.com",
+  "start_time": "2025-07-09 08:19:23.143181",
+  "steps": [
+    {
+      "step": "pre-processing",
+      "duration_sec": 2.24,
+      "tool_plan": [
+        {
+          "tool": "theHarvester",
+          "inputs": {
+            "domain": "paypal.com"
+          }
+        },
+        {
+          "tool": "shodan",
+          "inputs": {
+            "ip": "173.0.84.226"
+          }
+        }
+      ]
+    },
+    {
+      "step": "run_theHarvester",
+      "inputs": {
+        "domain": "paypal.com"
+      },
+      "output": {
+        "tool": "theHarvester",
+        "domain": "paypal.com",
+        "output_file": "paypal.com_results.json",
+        "raw_output": "{\"cmd\":\"-d paypal.com -b bing,certspotter,brave,crtsh,duckduckgo,hackertarget,otx,sitedossier,yahoo -l 10 -f paypal.com_results.json\",\"emails\":[\"service@paypal.com\"],\"hosts\":[\"*.msgeo.qa.paypal.com\",\"*.msgeo1int.qa.paypal.com\",\"*.msgeo1intdev52.qa.paypal.com\",\"*.msgeo2.qa.paypal.com\",\"*.msgeo21int.qa.paypal.com\",\"*.msgeo21intdev51.qa.paypal.com\",\"*.msgeo21intdev52.qa.paypal.com\",\"*.msgeo22int.qa.paypal.com\",\"*.msgeo22intdev51.qa.paypal.com\",\"*.msgeo22intdev52.qa.paypal.com\",\"*.msgeo2dev51.qa.paypal.com\",\"*.msgeo2dev52.qa.paypal.com\",\"*.msgeo2int.qa.paypal.com\",\"*.msgeo2intdev51.qa.paypal.com\",\"*.msgeo2intdev52.qa.paypal.com\",\"*.msgeodev51.qa.paypal.com\",\"*.msgeodev52.qa.paypal.com\",\"*.mslnp.qa.paypal.com\",\"*.mslnp1int.qa.paypal.com\",\"*.mslnp1intdev51.qa.paypal.com\",\"*.mslnp1intdev52.qa.paypal.com\",\"*.mslnp2int.qa.paypal.com\",\"*.mslnp2intdev51.qa.paypal.com\",\"*.mslnp2intdev52.qa.paypal.com\",\"*.mslnpdev51.qa.paypal.com\",\"*.mslnpdev52.qa.paypal.com\",\"*.msmaster.qa.paypal.com\",\"*.msmaster1int.qa.paypal.com\",\"*.msmaster1intdev51.qa.paypal.com\",\"*.msmaster1intdev52.qa.paypal.com\",\"*.msmaster2int.qa.paypal.com\",\"*.msmaster2intdev51.qa.paypal.com\",\"*.msmaster2intdev52.qa.paypal.com\",\"*.msmaster3int.qa.paypal.com\",\"*.msmaster4int.qa.paypal.com\",\"*.msmasterdev51.qa.paypal.com\",\"*.msmasterdev52.qa.paypal.com\",\"*.stage.paypal.com\",\"0cd20b6fe61233e4a24bf70f30c9ba46.paypal.com\",\"16695532.paypal.com\",\"17419645.paypal.com\",\"2Fdeveloper.paypal.com\",\"3pimages.sandbox.paypal.com:173.0.82.102\",\"64.4.247.24-reservedip.paypal.com:64.4.247.24\",\"64.4.247.25-reservedip.paypal.com:64.4.247.25\",\"64.4.247.26-reservedip.paypal.com:64.4.247.26\",\"64.4.247.27-reservedip.paypal.com:64.4.247.27\",\"64.4.247.28-reservedip.paypal.com:64.4.247.28\",\"64.4.247.29-reservedip.paypal.com:64.4.247.29\",\"64.4.247.30-reservedip.paypal.com:64.4.247.30\",\"64.4.247.31-reservedip.paypal.com:64.4.247.31\",\"FPMS-client.live.paypal.com\",\"a.paypal.com\",\"a.paypal.com:173.0.89.21\",\"a.sandbox.paypal.com:173.0.82.100\",\"account.paypal.com\",\"accounts.hcaptcha.paypal.com\",\"accounts.hcaptcha.sandbox.paypal.com\",\"accounts.paypal.com\",\"active-api-m.paypal.com\",\"active-api-m.paypal.com:173.0.85.11\",\"active-api-s.paypal.com\",\"active-api-s.paypal.com:173.0.84.93\",\"active-c.sandbox.paypal.com:173.0.82.104\",\"active-history.paypal.com\",\"active-history.paypal.com:66.211.169.220\",\"active-mobile.paypal.com\",\"active-mobile.paypal.com:173.0.88.212\",\"active-mobileclient.paypal.com\",\"active-pics.paypal.com\",\"active-pics.paypal.com:66.211.169.8\",\"adjvendor-cdn.glb.paypal.com\",\"adjvendor-edge.glb.paypal.com\",\"adjvendor.paypal.com\",\"adjvendor.paypal.com:173.0.93.162\",\"admin.paypal.com\",\"admin.paypal.com:173.0.84.10\",\"admin.paypal.com:173.0.88.10\",\"adnormserv-slc-a.paypal.com:173.0.81.4\",\"adnormserv-slc-b.paypal.com:173.0.81.36\",\"advertising.paypal.com\",\"agw.paypal.com:173.0.82.33\",\"airflow-ccg24-host.paypal.com\",\"airflow-dev-besx.qa.paypal.com\",\"airflow-ti.qa.paypal.com\",\"airflowgcp.qa.paypal.com\",\"airflowgcpdevlogin.qa.paypal.co"
+      },
+      "duration_sec": 31.49
+    },
+    {
+      "step": "run_shodan",
+      "inputs": {
+        "ip": "173.0.84.226"
+      },
+      "output": {
+        "tool": "shodan",
+        "ip": "173.0.84.226",
+        "note": "This data requires Shodan premium tier."
+      },
+      "duration_sec": 0.51
+    },
+    {
+      "step": "post-processing",
+      "duration_sec": 5.99,
+      "summary": "Here is a summary of the findings from the provided raw JSON results:\n\n**theHarvester Results:**\n- Emails found: `service@paypal.com`\n- Hostnames found:\n  - `*.msgeo.qa.paypal.com`\n  - `*.msgeo1int.qa.paypal.com`\n  - `*.msgeo1intdev52.qa.paypal.com`\n  - ... (many more subdomains related to `qa.paypal.com`)\n  - `0cd20b6fe61233e4a24bf70f30c9ba46.paypal.com`\n  - `16695532.paypal.com`\n  - `17419645.paypal.com`\n  - `2Fdeveloper.paypal.com`\n  - `3pimages.sandbox.paypal.com`\n  - `64.4.247.24-reservedip.paypal.com`\n  - `64.4.247.25-reservedip.paypal.com`\n  - ... (many more reserved IP hostnames)\n  - `FPMS-client.live.paypal.com`\n  - `a.paypal.com`\n  - `a.sandbox.paypal.com`\n  - `account.paypal.com`\n  - `accounts.hcaptcha.paypal.com`\n  - `accounts.hcaptcha.sandbox.paypal.com`\n  - `accounts.paypal.com`\n  - `active-api-m.paypal.com`\n  - `active-api-s.paypal.com`\n  - `active-c.sandbox.paypal.com`\n  - `active-history.paypal.com`\n  - `active-mobile.paypal.com`\n  - `active-mobileclient.paypal.com`\n  - `active-pics.paypal.com`\n  - `adjvendor-cdn.glb.paypal.com`\n  - `adjvendor-edge.glb.paypal.com`\n  - `adjvendor.paypal.com`\n  - `admin.paypal.com`\n  - `adnormserv-slc-a.paypal.com`\n  - `adnormserv-slc-b.paypal.com`\n  - `advertising.paypal.com`\n  - `agw.paypal.com`\n  - `airflow-ccg24-host.paypal.com`\n  - `airflow-dev-besx.qa.paypal.com`\n  - `airflow-ti.qa.paypal.com`\n  - `airflowgcp.qa.paypal.com`\n  - `airflowgcpdevlogin.qa.paypal.co`\n\n**Shodan Results:**\n- This data requires a Shodan premium tier subscription, so no additional details are available.\n\nOverall, the theHarvester results provide a wealth of information about PayPal's infrastructure, including many subdomains, hostnames, and a single email address. This could be useful for further OSINT research or potential security testing, though the Shodan data is limited without a premium account."
+    }
+  ],
+  "end_time": "2025-07-09 08:20:03.362569",
+  "duration_total_sec": 40.22
+}

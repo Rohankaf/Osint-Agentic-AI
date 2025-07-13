@@ -1,0 +1,14 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "microsoft.com"
+    }
+  },
+  {
+    "tool": "shodan",
+    "inputs": {
+      "domain": "microsoft.com"
+    }
+  }
+]

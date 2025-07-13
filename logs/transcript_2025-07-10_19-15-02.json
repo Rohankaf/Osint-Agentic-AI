@@ -1,0 +1,247 @@
+{
+  "user_prompt": "\"Run full recon on shopify.com",
+  "start_time": "2025-07-10 19:15:02.361337",
+  "steps": [
+    {
+      "step": "run_theHarvester",
+      "inputs": {
+        "domain": "shopify.com"
+      },
+      "output": {
+        "error": "Tool call failed: HTTPConnectionPool(host='127.0.0.1', port=8000): Read timed out. (read timeout=60)"
+      },
+      "duration_sec": 60.01
+    },
+    {
+      "step": "run_subfinder",
+      "inputs": {
+        "domain": "shopify.com"
+      },
+      "output": {
+        "tool": "subfinder",
+        "domain": "shopify.com",
+        "subdomains": [
+          "log2.ash.shopify.com",
+          "editions-summer-2025.shopify.com",
+          "ir.shopify.com",
+          "d.ssl.shopify.com",
+          "expert.shopify.com",
+          "contest.shopify.com",
+          "security.shopify.com",
+          "apm.shopify.com",
+          "app-store-staging-sonic.shopify.com",
+          "pins.shopify.com",
+          "log1.ash.shopify.com",
+          "goochapparel.shopify.com",
+          "stockroom.shopify.com",
+          "aisling.shopify.com",
+          "98.nat.ash.shopify.com",
+          "o18.mailer.shopify.com",
+          "brochure.shopify.com",
+          "109.nat.ash.shopify.com",
+          "cdn2.shopify.com",
+          "o29.mailer.shopify.com"
+        ]
+      },
+      "duration_sec": 19.9
+    },
+    {
+      "step": "run_whois",
+      "inputs": {
+        "target": "shopify.com"
+      },
+      "output": {
+        "tool": "whois",
+        "target": "shopify.com",
+        "results": {
+          "domain_name": "SHOPIFY.COM",
+          "registrar": "MarkMonitor, Inc.",
+          "registrar_url": "http://www.markmonitor.com",
+          "reseller": null,
+          "whois_server": "whois.markmonitor.com",
+          "referral_url": null,
+          "updated_date": [
+            "2025-03-19T15:17:11",
+            "2025-05-29T19:49:53+00:00"
+          ],
+          "creation_date": [
+            "2005-03-11T05:18:03",
+            "2005-03-11T05:18:03+00:00"
+          ],
+          "expiration_date": [
+            "2027-03-11T05:18:03",
+            "2027-03-11T00:00:00+00:00"
+          ],
+          "name_servers": [
+            "GOLD.FOUNDATIONDNS.COM",
+            "GOLD.FOUNDATIONDNS.NET",
+            "GOLD.FOUNDATIONDNS.ORG"
+          ],
+          "status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited",
+            "serverDeleteProhibited https://icann.org/epp#serverDeleteProhibited",
+            "serverTransferProhibited https://icann.org/epp#serverTransferProhibited",
+            "clientUpdateProhibited (https://www.icann.org/epp#clientUpdateProhibited)",
+            "clientTransferProhibited (https://www.icann.org/epp#clientTransferProhibited)",
+            "clientDeleteProhibited (https://www.icann.org/epp#clientDeleteProhibited)"
+          ],
+          "emails": [
+            "abusecomplaints@markmonitor.com",
+            "whoisrequest@markmonitor.com"
+          ],
+          "dnssec": "unsigned",
+          "name": null,
+          "org": "Shopify Inc.",
+          "address": null,
+          "city": null,
+          "state": null,
+          "registrant_postal_code": null,
+          "country": "CA"
+        }
+      },
+      "duration_sec": 7.54
+    },
+    {
+      "step": "run_dnsx",
+      "inputs": {
+        "domains": [
+          "shopify.com"
+        ]
+      },
+      "output": {
+        "tool": "dnsx",
+        "domains": [
+          "shopify.com"
+        ],
+        "results": [
+          {
+            "domain": "example.com",
+            "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.192.228.80\u001b[0m"
+          },
+          {
+            "domain": "example.com",
+            "ip": "\u001b[35mA\u001b[0m] [\u001b[32m96.7.128.175\u001b[0m"
+          },
+          {
+            "domain": "example.com",
+            "ip": "\u001b[35mA\u001b[0m] [\u001b[32m96.7.128.198\u001b[0m"
+          },
+          {
+            "domain": "example.com",
+            "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.215.0.136\u001b[0m"
+          },
+          {
+            "domain": "example.com",
+            "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.192.228.84\u001b[0m"
+          },
+          {
+            "domain": "example.com",
+            "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.215.0.138\u001b[0m"
+          },
+          {
+            "domain": "test.com",
+            "ip": "\u001b[35mA\u001b[0m] [\u001b[32m3.18.255.247\u001b[0m"
+          },
+          {
+            "domain": "test.com",
+            "ip": "\u001b[35mA\u001b[0m] [\u001b[32m34.224.149.186\u001b[0m"
+          },
+          {
+            "domain": "shopify.com",
+            "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.227.38.33\u001b[0m"
+          }
+        ]
+      },
+      "duration_sec": 1.73
+    },
+    {
+      "step": "run_amass",
+      "inputs": {
+        "domain": "shopify.com"
+      },
+      "output": {
+        "error": "Unknown tool: amass"
+      },
+      "duration_sec": 0.01
+    },
+    {
+      "step": "run_crtsh",
+      "inputs": {
+        "domain": "shopify.com"
+      },
+      "output": {
+        "error": "Unknown tool: crtsh"
+      },
+      "duration_sec": 0.0
+    },
+    {
+      "step": "run_shodan",
+      "inputs": {
+        "query": "domain:shopify.com"
+      },
+      "output": {
+        "error": "IP is required for Shodan."
+      },
+      "duration_sec": 0.0
+    },
+    {
+      "step": "run_censys",
+      "inputs": {
+        "query": "domain.exact:shopify.com"
+      },
+      "output": {
+        "error": "Unknown tool: censys"
+      },
+      "duration_sec": 0.01
+    },
+    {
+      "step": "run_whois",
+      "inputs": {
+        "domain": "shopify.com"
+      },
+      "output": {
+        "tool": "whois",
+        "error": "Target is required"
+      },
+      "duration_sec": 0.0
+    },
+    {
+      "step": "run_dnsdumpster",
+      "inputs": {
+        "domain": "shopify.com"
+      },
+      "output": {
+        "error": "Unknown tool: dnsdumpster"
+      },
+      "duration_sec": 0.0
+    },
+    {
+      "step": "run_zoomeye",
+      "inputs": {
+        "query": "domain:shopify.com"
+      },
+      "output": {
+        "error": "Unknown tool: zoomeye"
+      },
+      "duration_sec": 0.0
+    },
+    {
+      "step": "run_github-search",
+      "inputs": {
+        "query": "shopify.com"
+      },
+      "output": {
+        "error": "Unknown tool: github-search"
+      },
+      "duration_sec": 0.0
+    },
+    {
+      "step": "summary",
+      "summary": "Based on the provided JSON results, the following information can be summarized:\n\n**Whois Lookup**:\n- The Whois lookup for the domain `shopify.com` resulted in an error, stating that a \"Target is required\".\n\n**DNS Enumeration**:\n- The attempt to use the `dnsdumpster` tool for the domain `shopify.com` resulted in an error, stating that the tool is \"Unknown\".\n\n**Shodan Search**:\n- The attempt to use the `zoomeye` tool to search for the domain `shopify.com` resulted in an error, stating that the tool is \"Unknown\".\n\n**GitHub Search**:\n- The attempt to use the `github-search` tool to search for the domain `shopify.com` resulted in an error, stating that the tool is \"Unknown\".\n\nOverall, the provided JSON results do not contain any security-relevant information or findings. The errors indicate that the tools used (Whois, dnsdumpster, zoomeye, and github-search) were not recognized or could not be executed successfully."
+    }
+  ],
+  "end_time": "2025-07-10 19:16:59.179298",
+  "duration_total_sec": 116.82
+}

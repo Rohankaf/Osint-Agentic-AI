@@ -1,0 +1,47 @@
+Here is a summary of the findings from the provided raw JSON results:
+
+**theHarvester**:
+- Discovered several subdomains for the tesla.com domain, including:
+  - `*.cn.tesla.com`
+  - `*.de.tesla.com`
+  - `*.eu.logs.tesla.com`
+  - `*.gf.tesla.com`
+  - `*.logs.tesla.com`
+  - `*.na.logs.tesla.com`
+  - `*.nv.tesla.com`
+  - `*.ny.tesla.com`
+  - `*.paloalto.tesla.com`
+  - `*.powerhub.energy.tesla.com`
+- No email addresses were found.
+
+**Subfinder**:
+- Discovered additional subdomains for the tesla.com domain, including:
+  - `apigateway-charging-sandbox.tesla.com`
+  - `cua-help-me-charge-ui.tesla.com`
+  - `npuhe-prd.euw1.vn.cloud.tesla.com`
+  - `npute-eng.usw.vn.cloud.tesla.com`
+  - `onboard.tesla.com`
+  - `autobidder-preprd.powerhub.energy.tesla.com`
+  - `mobile-links-cdn.eng.vn.cloud.tesla.com`
+  - `npusc-eng.euw1.vn.cloud.tesla.com`
+  - `lionpayshare.tesla.com`
+  - `tvs-stg.tesla.com`
+  - `codeload.extgithub.tesla.com`
+  - `autobidder.powerhub.energy.tesla.com`
+  - `origin-mfa-na2.tesla.com`
+  - `resources.tesla.com`
+  - `rioolbuizens.tesla.com`
+  - `live-data.prd.usw2.fn.tesla.com`
+  - `akamai-apigateway-stg-warptmsapiserver.tesla.com`
+  - `live-data.prd.america.fn.tesla.com`
+  - `telemetry-robotics-api.eng.vn.cloud.tesla.com`
+  - `notebook.github-ap.tesla.com`
+
+**Whois**:
+- The tesla.com domain is registered to DNStination Inc. located in San Francisco, CA, USA.
+- The domain was created on 1992-11-04 and is set to expire on 2026-11-03.
+- The domain has several name servers, including Akamai and UltraDNS servers.
+- The domain has various status flags set, including `clientDeleteProhibited`, `clientTransferProhibited`, and `clientUpdateProhibited`.
+- The domain has several associated email addresses, including `abusecomplaints@markmonitor.com`, `admin@dnstinations.com`, and `whoisrequest@markmonitor.com`.
+
+Overall, the findings provide a good overview of the Tesla.com domain, including its subdomains, registration details, and associated email addresses. No open ports, service information, or security-relevant findings were reported in the provided data.

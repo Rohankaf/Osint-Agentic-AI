@@ -1,0 +1,195 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "example.com"
+    },
+    "result": {
+      "tool": "theHarvester",
+      "domain": "example.com",
+      "emails": [],
+      "hosts": [
+        "0blegit.example.com",
+        "1.example.com:83.14.191.100",
+        "109199.example.com:217.12.210.128",
+        "110711.example.com:195.123.208.128",
+        "112.6.83.173.example.com",
+        "120113.example.com:195.123.233.70",
+        "1207.example.com:185.224.212.55",
+        "123.example.com:193.183.99.28",
+        "123456.example.com:94.142.141.206",
+        "124644.example.com:195.123.238.203"
+      ]
+    }
+  },
+  {
+    "tool": "subfinder",
+    "inputs": {
+      "domain": "example.com"
+    },
+    "result": {
+      "tool": "subfinder",
+      "domain": "example.com",
+      "subdomains": [
+        "licher.lone.example.com",
+        "a20.galushenko.example.com",
+        "a321360.example.com",
+        "alexey1.bovkun11.example.com",
+        "pyat-roz11.example.com",
+        "a85210214.example.com",
+        "sasha1703-201337.example.com",
+        "bigwashing87339.example.com",
+        "69.48.148.213.static.example.com",
+        "him41111.example.com",
+        "a676536084.example.com",
+        "azim231015.example.com",
+        "desktop.example.com",
+        "vale1.zhdanov.example.com",
+        "sasha1703-201340.example.com",
+        "test50.example.com",
+        "admin61.example.com",
+        "geringgrow1.example.com",
+        "admin19.example.com",
+        "ip-46-254-123-69.example.com"
+      ]
+    }
+  },
+  {
+    "tool": "whois",
+    "inputs": {
+      "target": "example.com"
+    },
+    "result": {
+      "tool": "whois",
+      "target": "example.com",
+      "results": {
+        "domain_name": "EXAMPLE.COM",
+        "registrar": "RESERVED-Internet Assigned Numbers Authority",
+        "registrar_url": "http://res-dom.iana.org",
+        "reseller": null,
+        "whois_server": "whois.iana.org",
+        "referral_url": null,
+        "updated_date": "2024-08-14T07:01:34",
+        "creation_date": "1995-08-14T04:00:00",
+        "expiration_date": "2025-08-13T04:00:00",
+        "name_servers": [
+          "A.IANA-SERVERS.NET",
+          "B.IANA-SERVERS.NET"
+        ],
+        "status": [
+          "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+          "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+        ],
+        "emails": null,
+        "dnssec": "signedDelegation",
+        "name": null,
+        "org": null,
+        "address": null,
+        "city": null,
+        "state": null,
+        "registrant_postal_code": null,
+        "country": null
+      }
+    }
+  },
+  {
+    "tool": "dnsx",
+    "inputs": {
+      "domains": [
+        "licher.lone.example.com",
+        "a20.galushenko.example.com",
+        "a321360.example.com",
+        "alexey1.bovkun11.example.com",
+        "pyat-roz11.example.com",
+        "a85210214.example.com",
+        "sasha1703-201337.example.com",
+        "bigwashing87339.example.com",
+        "69.48.148.213.static.example.com",
+        "him41111.example.com",
+        "a676536084.example.com",
+        "azim231015.example.com",
+        "desktop.example.com",
+        "vale1.zhdanov.example.com",
+        "sasha1703-201340.example.com",
+        "test50.example.com",
+        "admin61.example.com",
+        "geringgrow1.example.com",
+        "admin19.example.com",
+        "ip-46-254-123-69.example.com"
+      ]
+    },
+    "result": {
+      "tool": "dnsx",
+      "domains": [
+        "licher.lone.example.com",
+        "a20.galushenko.example.com",
+        "a321360.example.com",
+        "alexey1.bovkun11.example.com",
+        "pyat-roz11.example.com",
+        "a85210214.example.com",
+        "sasha1703-201337.example.com",
+        "bigwashing87339.example.com",
+        "69.48.148.213.static.example.com",
+        "him41111.example.com",
+        "a676536084.example.com",
+        "azim231015.example.com",
+        "desktop.example.com",
+        "vale1.zhdanov.example.com",
+        "sasha1703-201340.example.com",
+        "test50.example.com",
+        "admin61.example.com",
+        "geringgrow1.example.com",
+        "admin19.example.com",
+        "ip-46-254-123-69.example.com"
+      ],
+      "results": [
+        {
+          "domain": "example.com",
+          "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.192.228.80\u001b[0m"
+        },
+        {
+          "domain": "example.com",
+          "ip": "\u001b[35mA\u001b[0m] [\u001b[32m96.7.128.175\u001b[0m"
+        },
+        {
+          "domain": "example.com",
+          "ip": "\u001b[35mA\u001b[0m] [\u001b[32m96.7.128.198\u001b[0m"
+        },
+        {
+          "domain": "example.com",
+          "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.215.0.136\u001b[0m"
+        },
+        {
+          "domain": "example.com",
+          "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.192.228.84\u001b[0m"
+        },
+        {
+          "domain": "example.com",
+          "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.215.0.138\u001b[0m"
+        },
+        {
+          "domain": "test.com",
+          "ip": "\u001b[35mA\u001b[0m] [\u001b[32m3.18.255.247\u001b[0m"
+        },
+        {
+          "domain": "test.com",
+          "ip": "\u001b[35mA\u001b[0m] [\u001b[32m34.224.149.186\u001b[0m"
+        },
+        {
+          "domain": "shopify.com",
+          "ip": "\u001b[35mA\u001b[0m] [\u001b[32m23.227.38.33\u001b[0m"
+        }
+      ]
+    }
+  },
+  {
+    "tool": "shodan",
+    "inputs": {
+      "query": "example.com"
+    },
+    "result": {
+      "error": "IP is required for Shodan."
+    }
+  }
+]

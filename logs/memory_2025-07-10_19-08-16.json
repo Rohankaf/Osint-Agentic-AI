@@ -1,0 +1,40 @@
+{
+  "user_prompt": "Find OSINT on example.com",
+  "tool_plan_history": [
+    [
+      {
+        "tool": "theHarvester",
+        "inputs": {
+          "domain": "example.com"
+        }
+      },
+      {
+        "tool": "subfinder",
+        "inputs": {
+          "domain": "example.com"
+        }
+      },
+      {
+        "tool": "dnsx",
+        "inputs": {
+          "domains": [
+            "*.example.com"
+          ]
+        }
+      },
+      {
+        "tool": "whois",
+        "inputs": {
+          "target": "example.com"
+        }
+      }
+    ]
+  ],
+  "tool_results_history": [],
+  "reflections": [
+    {
+      "type": "plan",
+      "reflection": null
+    }
+  ]
+}

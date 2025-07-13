@@ -1,0 +1,51 @@
+Based on the provided JSON results, here is a summary of the findings:
+
+**Subdomains**:
+- jiranrd.netflix.com
+- tcp-9-32-32.prod.ftl.netflix.com
+- stage.netflix.com
+- moviecontrol.netflix.com
+- bamboo.netflix.com
+- lg-corp.netflix.com
+- ccs.eu-west-1.prodaa.netflix.com
+- prod.http1.us-east-1.prodaa.netflix.com
+- oca-api.us-east-1.prodaa.netflix.com
+- api-user.us-west-2.prodaa.netflix.com
+- csfwfe02.dc2.corp.netflix.com
+- movies3.netflix.com
+- csrt-agg02.prod1.netflix.com
+- fe0-0.csfw-teradata.prod1.netflix.com
+- contactus.euwest-1.prodaa.netflix.com
+- ackbar.netflix.com
+- signup-dse.netflix.com
+- webmail.corp.netflix.com
+- dnm.prod.eu-west-1.prodaa.netflix.com
+- survey.netflix.com
+
+**Whois Information**:
+- Registrar: MarkMonitor, Inc.
+- Registrant Organization: Netflix, Inc.
+- Creation Date: 1997-11-11
+- Expiration Date: 2025-11-10
+- Name Servers:
+  - NS-1372.AWSDNS-43.ORG
+  - NS-1984.AWSDNS-56.CO.UK
+  - NS-659.AWSDNS-18.NET
+  - NS-81.AWSDNS-10.COM
+- Statuses:
+  - clientDeleteProhibited
+  - clientTransferProhibited
+  - clientUpdateProhibited
+  - serverDeleteProhibited
+  - serverTransferProhibited
+  - serverUpdateProhibited
+- Emails:
+  - abusecomplaints@markmonitor.com
+  - whoisrequest@markmonitor.com
+
+**Security-Relevant Findings**:
+The Whois information reveals that the Netflix.com domain is heavily protected, with various statuses prohibiting client and server-side actions such as deletion, transfer, and update. This suggests that Netflix takes security and domain management seriously.
+
+The subdomain list provides some insight into the internal infrastructure of Netflix, including various production, staging, and corporate subdomains. While not necessarily security-relevant, this information could be useful for further reconnaissance or targeted attacks.
+
+Overall, the findings do not reveal any obvious security vulnerabilities or sensitive information. Netflix appears to have a well-secured domain and infrastructure.

@@ -1,0 +1,20 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "example.com"
+    }
+  },
+  {
+    "tool": "subfinder",
+    "inputs": {
+      "domain": "example.com"
+    }
+  },
+  {
+    "tool": "whois",
+    "inputs": {
+      "target": "example.com"
+    }
+  }
+]

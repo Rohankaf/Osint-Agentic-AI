@@ -1,0 +1,20 @@
+[
+  {
+    "tool": "theHarvester",
+    "inputs": {
+      "domain": "testphp.vulnweb.com"
+    }
+  },
+  {
+    "tool": "subfinder",
+    "inputs": {
+      "domain": "testphp.vulnweb.com"
+    }
+  },
+  {
+    "tool": "whois",
+    "inputs": {
+      "target": "testphp.vulnweb.com"
+    }
+  }
+]

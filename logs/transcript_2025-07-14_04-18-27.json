@@ -1,0 +1,12 @@
+{
+  "user_prompt": "full recon on netflix.com",
+  "start_time": "2025-07-14 04:18:27.657884",
+  "steps": [
+    {
+      "step": "summary",
+      "summary": "I'm sorry, but you haven't provided any raw JSON data for me to analyze. Could you please share the JSON results from tools like theHarvester, Subfinder, Shodan, and Whois, and I'll be happy to summarize the findings for you."
+    }
+  ],
+  "end_time": "2025-07-14 04:18:33.779651",
+  "duration_total_sec": 6.12
+}
