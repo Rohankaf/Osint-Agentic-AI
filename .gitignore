@@ -1,0 +1,17 @@
+# Python junk
+__pycache__/
+*.py[cod]
+.env
+
+# OSINT tool output
+*.json
+*.xml
+*.txt
+logs/
+dnsx_input.txt
+dnsx_output.txt
+subfinder_*.json
+
+# Editor/venv
+venv/
+
