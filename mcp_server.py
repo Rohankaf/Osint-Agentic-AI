@@ -9,8 +9,10 @@ from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
+# Configurations
 SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
 MAX_SUBFINDER_RESULTS = int(os.getenv("MAX_SUBFINDER_RESULTS", 20))
 MAX_HARVESTER_EMAILS = int(os.getenv("MAX_HARVESTER_EMAILS", 10))
@@ -18,13 +20,16 @@ MAX_HARVESTER_HOSTS = int(os.getenv("MAX_HARVESTER_HOSTS", 10))
 MAX_RESULTS = 5
 MAX_LINE_LENGTH = 1000
 
+# Initialize FastAPI
 app = FastAPI()
 
+# Request schema
 class ToolRequest(BaseModel):
     tool: str
     inputs: dict
 
-@app.post("/run_tool")       #Receives a request with tool name and inputs
+# API endpoint to run tools
+@app.post("/run_tool")
 async def run_tool(req: ToolRequest):
     tool = req.tool.lower()
     inputs = req.inputs
@@ -48,13 +53,12 @@ async def run_tool(req: ToolRequest):
 # ---------------- Tool Functions ----------------
 
 def run_theharvester(inputs):
-    import json
     domain = inputs.get("domain", "")
     if not domain:
         return JSONResponse(status_code=400, content={"error": "Domain is required for theHarvester."})
 
     output_file = f"{domain}_results.json"
-    sources = "bing,crtsh,hackertarget,otx"
+    sources = "crtsh,hackertarget,otx"
     cmd = f"theHarvester -d {domain} -b {sources} -l 10 -f {output_file}"
 
     try:
@@ -83,15 +87,13 @@ def run_theharvester(inputs):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Error reading output: {str(e)}"})
 
-
 def run_subfinder(inputs):
-    import json
     domain = inputs.get("domain", "")
     if not domain:
         return JSONResponse(status_code=400, content={"error": "Domain is required for Subfinder."})
 
     output_file = f"subfinder_{domain}.json"
-    subfinder_path = "/Users/rohahahan/go/bin/subfinder"  # Change if needed
+    subfinder_path = "/Users/rohahahan/go/bin/subfinder"  # Adjust if needed
     cmd = f"{subfinder_path} -d {domain} -o {output_file} -silent -json"
 
     try:
@@ -114,7 +116,6 @@ def run_subfinder(inputs):
         return JSONResponse(status_code=500, content={"error": f"Subfinder failed: {str(e)}"})
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Parsing subfinder output failed: {str(e)}"})
-
 
 def run_shodan(inputs):
     ip = inputs.get("ip", "")
@@ -141,12 +142,13 @@ def run_shodan(inputs):
             return {"tool": "shodan", "ip": ip, "note": "This data requires Shodan premium tier."}
         return JSONResponse(status_code=500, content={"error": f"Shodan error: {str(e)}"})
 
-
 def clean_whois_value(value):
     if isinstance(value, (datetime.date, datetime.datetime)):
         return value.isoformat()
-    elif isinstance(value, (set, bytes)):
-        return list(value) if isinstance(value, set) else value.decode("utf-8", errors="ignore")
+    elif isinstance(value, set):
+        return list(value)
+    elif isinstance(value, bytes):
+        return value.decode("utf-8", errors="ignore")
     return value
 
 def run_whois(inputs):
@@ -162,15 +164,13 @@ def run_whois(inputs):
         return {"tool": "whois", "target": target, "error": str(e)}
 
 def run_dnsx(inputs):
-    import json
-
     domains = inputs.get("domains", [])
     if not domains or not isinstance(domains, list):
         return JSONResponse(status_code=400, content={"error": "A list of domains is required for dnsx."})
 
     input_file = "dnsx_input.txt"
     output_file = "dnsx_output.txt"
-    dnsx_path = "/Users/rohahahan/go/bin/dnsx"  # ✅ Make sure this path is correct
+    dnsx_path = "/Users/rohahahan/go/bin/dnsx"  # ✅ Confirm path
 
     with open(input_file, "w") as f:
         f.write("\n".join(domains))
@@ -184,21 +184,62 @@ def run_dnsx(inputs):
             return JSONResponse(status_code=500, content={"error": "dnsx output file not found."})
 
         with open(output_file, "r", encoding="utf-8") as f:
-            lines = [line.strip() for line in f if line.strip()]
+            raw_lines = [line.strip() for line in f if line.strip()]
 
-        results = []
-        for line in lines[:20]:  # ✅ Limit results
-            if " [" in line:
-                domain, meta = line.split(" [", 1)
-                ip = meta.rstrip("]")
-                results.append({"domain": domain.strip(), "ip": ip.strip()})
-            else:
-                results.append({"raw": line})
+        def strip_ansi(text):
+            result = ""
+            skip = False
+            for char in text:
+                if char == "\x1b":
+                    skip = True
+                    continue
+                if skip:
+                    if char == "m":
+                        skip = False
+                    continue
+                result += char
+            return result
+
+        parsed_results = []
+        for line in raw_lines[:50]:  # Cap to avoid large payloads
+            line = strip_ansi(line).strip()
+
+            if "[" not in line or "]" not in line:
+                continue
+
+            parts = line.split("[")
+            if len(parts) < 3:
+                continue
+
+            domain = parts[0].strip()
+            ip = parts[2].replace("]", "").strip()
+
+            if domain and ip:
+                parsed_results.append({"domain": domain, "ip": ip})
+
+        input_domains = set(d.lstrip("*.").lower() for d in domains)
+
+        def is_subdomain(domain, input_set):
+            domain = domain.lower()
+            return any(domain == base or domain.endswith("." + base) for base in input_set)
+
+        filtered_results = []
+        seen = set()
+        for r in parsed_results:
+            d = r.get("domain")
+            ip = r.get("ip")
+            if not d or not ip:
+                continue
+            if is_subdomain(d, input_domains):
+                key = (d, ip)
+                if key not in seen:
+                    seen.add(key)
+                    filtered_results.append(r)
 
         return {
             "tool": "dnsx",
             "domains": domains,
-            "results": results
+            "results": filtered_results
         }
 
     except subprocess.TimeoutExpired:
@@ -206,5 +247,4 @@ def run_dnsx(inputs):
     except subprocess.CalledProcessError as e:
         return JSONResponse(status_code=500, content={"error": f"dnsx failed: {str(e)}"})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": f"Parsing dnsx output failed: {str(e)}"})
- 
+        return JSONResponse(status_code=500, content={"error": f"Unexpected error: {str(e)}"})

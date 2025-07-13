@@ -5,6 +5,7 @@ from datetime import datetime
 import requests
 from dotenv import load_dotenv
 import anthropic
+import ipaddress
 
 load_dotenv()
 CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
@@ -21,14 +22,14 @@ PRE_PROCESSING_PROMPT = """You are an OSINT task planner.
 
 Your job is to turn a user's recon goal into a step-by-step JSON tool plan using only the tools listed below.
 
-📌 Supported tools (use only these — do not invent others):
+ Supported tools (use only these — do not invent others):
 - theHarvester (input: domain)
 - subfinder (input: domain)
 - shodan (input: IP only — use only {"query": "IP"} format, never "host" or domain names)
 - whois (input: domain or IP as 'target')
 - dnsx (input: list of domains)
 
-🔐 Rules:
+ Rules:
 - ONLY use the tools listed above.
 - DO NOT use tools like amass, crtsh, censys, zoomeye, dnsdumpster, or github-search.
 - Prefer minimal tool use unless multiple are justified.
@@ -37,93 +38,90 @@ Your job is to turn a user's recon goal into a step-by-step JSON tool plan using
 - Do not ask for more input — infer what makes sense from what's given.
 - Always limit scope to reduce Claude API usage (no large loops or overkill).
 
-✅ Return ONLY a raw JSON list of tool steps in the format:
+ Return ONLY a raw JSON list of tool steps in the format:
 [
   {"tool": "theHarvester", "inputs": {"domain": "example.com"}},
   {"tool": "subfinder", "inputs": {"domain": "example.com"}},
-  {"tool": "dnsx", "inputs": {"domains": ["a.example.com", "b.example.com"]}},
-  {"tool": "whois", "inputs": {"target": "example.com"}},
-  {"tool": "shodan", "inputs": {"query": "1.2.3.4"}}
-]"""
+  {"tool": "shodan", "inputs": {"query": "example.com"}},
+  {"tool": "whois", "inputs": {"target": "example.com"}}
+  {"tool": "dnsx", "inputs": {"domains": ["sub1.example.com", "sub2.example.com"]}}
+]
+"""
+
 POST_PROCESSING_PROMPT = """You are an skilled OSINT analyst. Given raw JSON results from tools like theHarvester, Subfinder, Shodan, and Whois, summarize the findings.
 
 Extract and highlight:
 - Open ports, service info, emails, hostnames, orgs, locations, subdomains
 - Mention anything juicy or security-relevant
 
-Skip HTML or long raw data. Return a clean markdown-style summary."""
+Skip HTML or long raw data. Return a clean markdown-style summary.
+"""
+
 REFLECT_PLAN_PROMPT = """You are a reflective OSINT planner. Given the initial plan and user goal, decide if the plan:
 
 - Is missing any useful steps using ONLY the allowed tools listed.
 - Has redundant tools or can be simplified.
 - Could improve in accuracy or coverage using ONLY the allowed tools.
+- Only use Shodan with valid IP addresses. Never use domain names like "example.com" or "1234.example.com".
 
- VERY IMPORTANT:
-Use ONLY the following tools (never suggest anything else):
-- theHarvester
-- subfinder
-- dnsx
-- whois
-- shodan
+Tools you may use:
+- theHarvester (input: domain)
+- subfinder (input: domain)
+- dnsx (input: domains list)
+- whois (input: target)
+- shodan (input: query — must be IP only)
 
-Return:
-- A new plan (as a JSON list) if improvement is needed
-- Or {"status": "good"} if the plan is already solid"""
+Very strict output rules:
+- If the plan is already solid, return only: {"status": "good"}
+- If you suggest changes, return a valid JSON list: [ {...}, {...} ]
+- NEVER return separate JSON objects outside a list.
+- NEVER use a domain name in a Shodan query — only use IP addresses like "1.2.3.4".
+
+Example of correct output:
+[
+  {"tool": "dnsx", "inputs": {"domains": ["sub1.example.com"]}},
+  {"tool": "shodan", "inputs": {"query": "1.2.3.4"}}
+]
+
+Return ONLY valid JSON.
+"""
+
 REFLECT_RESULTS_PROMPT = """You are a reflective OSINT agent. Given the tool outputs and user goal, decide:
 - Did we learn enough to answer the user’s request?
 - Is more data needed?
 - Should we rerun with additional tools?
 
-Respond with one of:
+If subdomains are found but not verified (e.g., not checked for liveness), consider adding a dnsx step — but only using real subdomains extracted from previous tool output.
+
+IMPORTANT INPUT RULES:
+- For dnsx: only use known, verified subdomains in the form of ["sub1.example.com", "sub2.example.com"] — avoid fake/generated or wildcard subdomains.
+- For shodan: only use IPs like {"query": "1.2.3.4"} — never use domains or org names.
+- Do NOT generate random subdomains. Only use those found in previous tool output.
+- Use only tools from this list: theHarvester, subfinder, dnsx, whois, shodan
+- If subdomains of the original domain are found but not verified, consider adding a dnsx step.
+ONLY add DNSX steps for subdomains of the original user domain (do not invent new domains).
+
+Respond strictly with one of the following formats:
 - {"status": "goal_met"}
 - {"status": "needs_more", "reason": "...", "next_plan": [ ... ]}
 
-✅ next_plan MUST be a list of tool steps like:
+Where next_plan is a raw JSON list of tool steps like:
 [
-  {"tool": "shodan", "inputs": {"query": "example.com"}},
+  {"tool": "shodan", "inputs": {"query": "1.2.3.4"}},
+  {"tool": "dnsx", "inputs": {"domains": ["sub1.example.com"]},
   {"tool": "whois", "inputs": {"target": "example.com"}}
 ]
-
 Do not use natural language strings. Use only these tools:
 - theHarvester
 - subfinder
 - dnsx
 - whois
-- shodan"""
+- shodan
+"""
 
 # --- Utility Functions ---
-
-def filter_supported_tools(tool_plan):
-    cleaned = []
-    for step in tool_plan:
-        if not isinstance(step, dict):
-            continue
-        tool = step.get("tool")
-        inputs = step.get("inputs", {})
-        if tool not in ALLOWED_TOOLS:
-            continue
-        if tool in {"theHarvester", "subfinder"}:
-            domain = inputs.get("domain")
-            if isinstance(domain, str) and domain.strip():
-                cleaned.append({"tool": tool, "inputs": {"domain": domain.strip()}})
-        elif tool == "dnsx":
-            domains = inputs.get("domains")
-            if isinstance(domains, list):
-                domains = [d for d in domains if isinstance(d, str) and "*" not in d]
-                if domains:
-                    cleaned.append({"tool": tool, "inputs": {"domains": domains}})
-        elif tool == "shodan":
-            query = inputs.get("query") or inputs.get("ip") or inputs.get("domain") or inputs.get("target")
-            if isinstance(query, str) and query.strip():
-                cleaned.append({"tool": tool, "inputs": {"query": query.strip()}})
-        elif tool == "whois":
-            for key in ("target", "domain", "ip"):
-                if key in inputs and isinstance(inputs[key], str):
-                    cleaned.append({"tool": tool, "inputs": {"target": inputs[key].strip()}})
-                    break
-    return cleaned
-
 def ask_claude(system_prompt, user_prompt):
+    print(user_prompt)
     response = client.messages.create(
         model="claude-3-haiku-20240307",
         system=system_prompt,
@@ -152,8 +150,67 @@ def run_tool(tool, inputs):
     except Exception as e:
         return {"error": f"Tool call failed: {str(e)}"}
 
-def reflect_on_plan(user_prompt, plan):
-    output = ask_claude(REFLECT_PLAN_PROMPT, json.dumps({"goal": user_prompt, "plan": plan}, indent=2))
+def filter_supported_tools(tool_plan, original_domain=None):
+    cleaned = []
+    for step in tool_plan:
+        if not isinstance(step, dict):
+            continue
+        tool = step.get("tool")
+        inputs = step.get("inputs", {})
+        if tool not in ALLOWED_TOOLS:
+            continue
+
+        if tool in {"theHarvester", "subfinder"}:
+            domain = inputs.get("domain")
+            if isinstance(domain, str) and domain.strip():
+                cleaned.append({"tool": tool, "inputs": {"domain": domain.strip()}})
+        elif tool == "dnsx":
+            domains = inputs.get("domains")
+            if isinstance(domains, list):
+                valid = []
+                for d in domains:
+                    if isinstance(d, str):
+                        d = d.lstrip("*.").strip()
+                        if "*" in d:
+                            continue
+                        if original_domain and d.endswith("." + original_domain):
+                            valid.append(d)
+                if valid:
+                    cleaned.append({"tool": "dnsx", "inputs": {"domains": valid}})
+        elif tool == "shodan":
+            query = inputs.get("query") or inputs.get("ip") or inputs.get("domain") or inputs.get("target")
+            if isinstance(query, str):
+                try:
+                    ip = str(ipaddress.ip_address(query.strip()))
+                    cleaned.append({"tool": "shodan", "inputs": {"query": ip}})
+                except ValueError:
+                    pass
+        elif tool == "whois":
+            target = None
+            for key in ("target", "domain", "ip", "domains"):
+                val = inputs.get(key)
+                if isinstance(val, str):
+                    target = val.strip()
+                    break
+                elif isinstance(val, list):
+                    targets = [v.strip() for v in val if isinstance(v, str)]
+                    if targets:
+                        target = targets[0]
+                        break
+            if target:
+                cleaned.append({"tool": "whois", "inputs": {"target": target}})
+    return cleaned
+
+def reflect_on_plan(user_prompt, plan, memory):
+    payload = {
+        "goal": user_prompt,
+        "current_plan": plan,
+        "plan_history": memory.get("tool_plan_history", []),
+        "results_so_far": memory.get("tool_results_history", []),
+        "reflections_so_far": memory.get("reflections", [])
+    }
+    output = ask_claude(REFLECT_PLAN_PROMPT, json.dumps(payload, indent=2))
+    print("\n[DEBUG] Claude raw reflection output:\n", output)
     parsed = safe_parse_json(output)
     if isinstance(parsed, list):
         return parsed
@@ -164,92 +221,190 @@ def reflect_on_plan(user_prompt, plan):
             return parsed["plan"]
     return {"status": "fallback", "raw": output}
 
-def reflect_on_results(user_prompt, results):
-    output = ask_claude(REFLECT_RESULTS_PROMPT, json.dumps({"goal": user_prompt, "results": results}, indent=2))
+def reflect_on_results(user_prompt, results, memory):
+    payload = {
+        "goal": user_prompt,
+        "results": results,
+        "plan_history": memory.get("tool_plan_history", []),
+        "reflections_so_far": memory.get("reflections", [])
+    }
+    output = ask_claude(REFLECT_RESULTS_PROMPT, json.dumps(payload, indent=2))
     parsed = safe_parse_json(output)
+
     if isinstance(parsed, dict) and parsed.get("status") in ["goal_met", "needs_more"]:
+        if parsed["status"] == "needs_more":
+            parsed.setdefault("next_plan", [])
+
+            # ✅ Extract only valid IPs from filtered dnsx results
+            dnsx_ips = []
+            for r in results:
+                if r["tool"] != "dnsx":
+                    continue
+                for entry in r.get("result", {}).get("results", []):
+                    ip_raw = entry.get("ip", "")
+                    try:
+                        ip_obj = ipaddress.ip_address(ip_raw.strip())
+                        dnsx_ips.append(str(ip_obj))
+                    except ValueError:
+                        continue
+
+            for ip in sorted(set(dnsx_ips)):
+                parsed["next_plan"].append({"tool": "shodan", "inputs": {"query": ip}})
+
+            # ✅ Only add DNSX again if new subdomains were found
+            original_domain = extract_original_domain_from_tool_plan(
+                memory.get("tool_plan_history", [])[-1] if memory.get("tool_plan_history") else []
+            )
+            subdomains = extract_subdomains(results, original_domain)
+            if subdomains:
+                parsed["next_plan"].append({
+                    "tool": "dnsx",
+                    "inputs": {"domains": sorted(set(subdomains))}
+                })
+
         return parsed
+
     return {"status": "fallback", "raw": output}
+
+
+def extract_original_domain_from_tool_plan(plan):
+    if not isinstance(plan, list):
+        return ""
+    for step in plan:
+        inputs = step.get("inputs", {})
+        domain = inputs.get("domain") or inputs.get("target")
+        if isinstance(domain, str) and domain.strip():
+            return domain.strip().lower()
+    return ""
+
+def extract_subdomains(results, original_domain):
+    subdomains = set()
+    for r in results:
+        if r["tool"] in {"subfinder", "theHarvester"}:
+            for sub in r.get("result", {}).get("subdomains", []):
+                if isinstance(sub, str):
+                    sub_clean = sub.lstrip("*.").strip()
+                    if sub_clean == original_domain or sub_clean.endswith("." + original_domain):
+                        subdomains.add(sub_clean)
+    return list(subdomains)
 
 def parse_next_plan(plan):
     return safe_parse_json(plan) if isinstance(plan, str) else plan
 
-# --- Main Loop ---
 def main():
     user_prompt = input("Enter your OSINT prompt: ").strip()
+    if not user_prompt:
+        print("⚠️ Please enter a valid OSINT prompt.")
+        return
+
     start_time = datetime.now()
+    timestamp = start_time.strftime('%Y-%m-%d_%H-%M-%S')
 
     transcript = {"user_prompt": user_prompt, "start_time": str(start_time), "steps": []}
-    short_term_memory = {"user_prompt": user_prompt, "tool_plan_history": [], "tool_results_history": [], "reflections": []}
+    short_term_memory = {
+        "user_prompt": user_prompt,
+        "tool_plan_history": [],
+        "tool_results_history": [],
+        "reflections": []
+    }
+
     loops = 0
     max_loops = 3
+    already_run = set()
 
-    tool_plan = filter_supported_tools(safe_parse_json(ask_claude(PRE_PROCESSING_PROMPT, user_prompt)))
+    try:
+        tool_plan_raw = ask_claude(PRE_PROCESSING_PROMPT, user_prompt)
+        parsed_plan = safe_parse_json(tool_plan_raw)
+        if not parsed_plan:
+            print("❌ Claude returned invalid tool plan.")
+            return
+        original_domain = extract_original_domain_from_tool_plan(parsed_plan)
+        tool_plan = filter_supported_tools(parsed_plan, original_domain=original_domain)
+    except Exception as e:
+        print(f"❌ Claude preprocessing failed: {e}")
+        return
+
     if not tool_plan:
-        print("❌ Claude returned invalid JSON.")
+        print("❌ No valid tools in Claude plan.")
         return
 
     while loops < max_loops:
         loops += 1
+        print("############################")
         print(f"\n🔄 Loop {loops} - Executing tool plan...")
+        print("############################")
 
-        # Reflect on plan
-        plan_review = reflect_on_plan(user_prompt, tool_plan)
-        short_term_memory["tool_plan_history"].append(tool_plan)
-        short_term_memory["reflections"].append({"type": "plan", "reflection": plan_review})
-
-        if isinstance(plan_review, list):
-            tool_plan = filter_supported_tools(plan_review)
-        elif isinstance(plan_review, dict) and plan_review.get("status") == "good":
-            pass
-        else:
-            print("⚠️ Invalid plan reflection.")
-
+        print("\n📋 Current Tool Plan:\n", json.dumps(tool_plan, indent=2))
         all_results = []
+
         for step in tool_plan:
             tool = step["tool"]
             inputs = step["inputs"]
+            key = (tool, json.dumps(inputs, sort_keys=True))
+            if key in already_run:
+                print(f"⏭️ Skipping already run: {tool} with {inputs}")
+                continue
+            already_run.add(key)
             print(f"\n⚙️ Running {tool} with inputs: {inputs}")
             t0 = time.time()
             result = run_tool(tool, inputs)
             t1 = time.time()
             print(f"✅ Result:\n{json.dumps(result, indent=2)}")
             all_results.append({"tool": tool, "inputs": inputs, "result": result})
-            transcript["steps"].append({"step": f"run_{tool}", "inputs": inputs, "output": result, "duration_sec": round(t1 - t0, 2)})
+            transcript["steps"].append({
+                "step": f"run_{tool}",
+                "inputs": inputs,
+                "output": result,
+                "duration_sec": round(t1 - t0, 2)
+            })
 
-        result_review = reflect_on_results(user_prompt, all_results)
+        short_term_memory["tool_plan_history"].append(tool_plan)
         short_term_memory["tool_results_history"].append(all_results)
-        short_term_memory["reflections"].append({"type": "result", "loop": loops, "reflection": result_review})
+
+        # ✅ Now reflect on the results
+        result_review = reflect_on_results(user_prompt, all_results, short_term_memory)
+        short_term_memory["reflections"].append({
+            "type": "result",
+            "loop": loops,
+            "reflection": result_review
+        })
 
         if result_review.get("status") == "goal_met":
             print("\n✅ Goal Met. Exiting loop.")
             break
         elif result_review.get("status") == "needs_more":
-            tool_plan = filter_supported_tools(parse_next_plan(result_review.get("next_plan", [])))
+            next_plan = parse_next_plan(result_review.get("next_plan", []))
+            tool_plan = filter_supported_tools(next_plan, original_domain=original_domain)
             if not tool_plan:
-                print("⚠️ No valid tools left after reflection. Stopping.")
+                print("⚠️ No valid tools left after reflection.")
                 break
-        elif not isinstance(result_review, dict) or "raw" not in result_review:
+        elif not isinstance(result_review, dict):
             print("⚠️ Invalid result reflection. Exiting.")
             break
         else:
-            print("⚠️ Claude said:\n", result_review.get("raw", "No raw output found."))
-            break
+            # Just print Claude's message for visibility, but DON'T break
+            print("💬 Claude reflection:\n", result_review.get("raw"))
+            # Continue to next loop
 
     all_results_flat = [r for loop in short_term_memory["tool_results_history"] for r in loop]
-    post_output = ask_claude(POST_PROCESSING_PROMPT, json.dumps(all_results_flat, indent=2))
-    print("\n🧠 Final Summary:\n")
-    print(post_output)
+    try:
+        post_output = ask_claude(POST_PROCESSING_PROMPT, json.dumps(all_results_flat, indent=2))
+    except Exception as e:
+        post_output = f"❌ Claude summary failed: {e}"
+
+    print("\n🧠 Final Summary:\n", post_output)
 
     transcript["steps"].append({"step": "summary", "summary": post_output})
     transcript["end_time"] = str(datetime.now())
     transcript["duration_total_sec"] = round((datetime.now() - start_time).total_seconds(), 2)
 
-    timestamp = start_time.strftime('%Y-%m-%d_%H-%M-%S')
     with open(f"{TRANSCRIPT_DIR}/transcript_{timestamp}.json", "w") as f:
         json.dump(transcript, f, indent=2)
     with open(f"{TRANSCRIPT_DIR}/memory_{timestamp}.json", "w") as f:
         json.dump(short_term_memory, f, indent=2)
+    with open(f"{TRANSCRIPT_DIR}/summary_{timestamp}.txt", "w") as f:
+        f.write(post_output)
+
     print(f"\n📄 Saved transcript and memory to logs/")
 
 if __name__ == "__main__":
