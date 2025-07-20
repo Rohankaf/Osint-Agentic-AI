@@ -1,69 +1,100 @@
-## OSINT Agentic AI Pipeline
+# OSINT Agentic AI Pipeline
 
-A powerful OSINT automation framework using Claude (Anthropic), FastAPI, and CLI tools. It supports multi-loop planning, tool reflection, memory tracking, and modular execution of recon tools.
+A modular, LLM-driven OSINT automation framework that leverages Claude, GPT, and Gemini for intelligent tool orchestration. Powered by FastAPI and real CLI tools for reconnaissance and analysis.
 
+---
 
-# Features
+##  Features
 
-- LLM-driven tool planning with Claude
-- Multi-loop execution with self-reflection
-- Short-term memory to track goals, plans, results
-- FastAPI backend to run supported tools:
-  - `theHarvester`
+-  LLM-based multi-loop planning & reflection (Claude, GPT-3.5, Gemini)
+-  Reflexive execution loop for smart tool usage
+-  Short-term memory & transcript logging
+-  FastAPI MCP server to run tools like:
   - `subfinder`
+  - `theHarvester`
   - `whois`
   - `dnsx`
   - `shodan`
+- Token & cost tracking per LLM with hard limit
 
-# Architecture
+---
 
-User Prompt → Claude Preprocessing → Tool Plan → Tool Execution (MCP) → Claude Reflection → Repeat if needed → Final Summary
+##  Architecture
 
-# Tools Used
+User Prompt
+↓
+Claude Preprocessing (Initial Plan)
+↓
+FastAPI MCP → Tool Execution
+↓
+Claude Reflection (Refines Plan)
+↓
+Repeat Loop (if needed)
+↓
+Final LLM Summary (Full recon output)
 
-| Tool         | Purpose                     |
-|--------------|-----------------------------|
-| Claude       | LLM for reasoning + planning|
-| FastAPI      | MCP (Multi-tool control point) |
-| Subfinder    | Subdomain enumeration       |
-| theHarvester | Email + subdomain OSINT     |
-| dnsx         | DNS probing (resolves IPs)  |
-| Shodan       | IP-based device fingerprinting |
-| whois        | WHOIS data extraction       |
 
-# Project Structure
+---
+
+##  Tools Used
+
+| Tool          | Function                                   |
+|---------------|--------------------------------------------|
+| Claude        | Primary planner, reasoner, and summarizer  |
+| GPT-3.5 Turbo | Optional planner or summarizer             |
+| Gemini        | Optional backup model                      |
+| subfinder     | Subdomain enumeration                      |
+| theHarvester  | Email + host OSINT                         |
+| dnsx          | DNS probing & IP resolution                |
+| shodan        | IP fingerprinting                          |
+| whois         | Domain ownership data                      |
+| FastAPI       | Backend MCP control for tool routing       |
+
+---
+
+## 📁 Project Structure
+
 .
-├── llm_client.py # LLM loop: planning, reflection, control
-├── mcp_server.py # FastAPI backend that runs OSINT tools
-├── tools_used.md # Optional: docs for tool functions
-├── logs/ # Transcript and results from each run
-└── .env # Claude API key (not committed)
+├── llm_client.py # Core LLM control loop
+├── mcp_server.py # FastAPI backend for tool execution
+├── requirements.txt # Python dependencies
+├── logs/ # Run memory + transcript logs
+├── .env # Your secret API keys (not committed)
+└── README.md
 
-# Setup
+
+---
+
+## ⚙️ Setup
 
 ```bash
 git clone https://github.com/codex500/Osint-Agentic-AI
 cd Osint-Agentic-AI
+
 python3 -m venv venv
 source venv/bin/activate
+
 pip install -r requirements.txt
 ```
+Configure .env
+In the project root, create a .env file:
+CLAUDE_API_KEY=your-anthropic-key
+SHODAN_API_KEY=your-shodan-key
+OPENAI_API_KEY=your-openAi-key
+GEMINI_API_KEY=your_gemini_key_here
 
-# Create a .env file in the root directory:
-
-CLAUDE_API_KEY=sk-your-api-key-here
-
-# Start the FastAPI server:
-
+Run the FastAPI MCP Server:
 uvicorn mcp_server:app --reload
 
-# How to Run
-
+Run the OSINT Agent:
 python3 llm_client.py
 
-# Enter a prompt like:
+Then type a prompt like:
+Run full recon on example.com
 
-Run full recon on tesla.com
+
+
+
 
 
  
