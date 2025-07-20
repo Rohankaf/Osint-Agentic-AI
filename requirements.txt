@@ -1,5 +1,5 @@
 anthropic
-openai
+openai>=1.0.0
 shodan
 whois
 requests
