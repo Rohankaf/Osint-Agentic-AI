@@ -19,16 +19,17 @@ A modular, LLM-driven OSINT automation framework that leverages Claude, GPT, and
 
 ---
 
-##  Architecture
+##Architecture
 
 ```mermaid
 graph TD
     A[User Prompt] --> B[LLM Planning\nClaude / GPT-3.5 / Gemini]
     B --> C[Tool Orchestration Layer]
     C --> D[Reflexive Multi-loop Execution\nPlan → Run → Reflect → Repeat]
-    D --> E[FastAPI MCP (Tool Server)\nsubfinder, theHarvester, whois, dnsx, shodan]
+    D --> E[FastAPI MCP - Tool Server\nsubfinder, theHarvester, whois, dnsx, shodan]
     E --> F[LLM Reflection & Plan Adjustment]
     F --> G[Final Output\nSummary + Transcript + Token/Cost Log]
+
 ```
 ---
 
