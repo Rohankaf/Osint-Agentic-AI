@@ -28,7 +28,7 @@ graph TD
     C --> D[Reflexive Multi-loop Execution Plan → Run → Reflect → Repeat]
     D --> E[FastAPI MCP - Tool Server subfinder, theHarvester, whois, dnsx, shodan]
     E --> F[LLM Reflection & Plan Adjustment]
-    F --> G[Final Output\nSummary + Transcript + Token/Cost Log]
+    F --> G[Final Output\nSummary + Transcript + Token Cost Log]
 
 ```
 ---
@@ -97,9 +97,3 @@ Then type a prompt like:
 ```
 Run full recon on example.com
 ```
-
-
-
-
-
- 
