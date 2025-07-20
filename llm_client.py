@@ -1,3 +1,4 @@
+
 import os 
 import json
 import time
@@ -6,6 +7,21 @@ import requests
 from dotenv import load_dotenv
 import anthropic
 import ipaddress
+import argparse
+from llm_gpt import ask_gpt
+from llm_gemini import ask_gemini
+
+# === Cost Tracking Constants (per 1k tokens) ===
+COST_PER_1K_TOKENS = {
+    "claude": 0.25,     # Claude Haiku
+    "gpt": 0.0015,      # GPT-3.5 Turbo
+    "gemini": 0.00025   # Gemini Pro (estimated, adjust if exact known)
+}
+
+# === Global Cost Tracking ===
+llm_token_usage = {"claude": 0, "gpt": 0, "gemini": 0}
+llm_cost_usage = {"claude": 0.0, "gpt": 0.0, "gemini": 0.0}
+total_cost_limit = 1.0  # $1 budget
 
 load_dotenv()
 CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
@@ -120,16 +136,42 @@ Do not use natural language strings. Use only these tools:
 """
 
 # --- Utility Functions ---
-def ask_claude(system_prompt, user_prompt):
-    print(user_prompt)
-    response = client.messages.create(
-        model="claude-3-haiku-20240307",
-        system=system_prompt,
-        max_tokens=1024,
-        temperature=0.2,
-        messages=[{"role": "user", "content": user_prompt}]
-    )
-    return response.content[0].text.strip()
+def ask_llm(system_prompt, user_prompt):
+    global model
+    prompt_tokens = len(system_prompt.split()) + len(user_prompt.split())
+
+    if model == "gpt":
+        output = ask_gpt(system_prompt, user_prompt)
+    elif model == "gemini":
+        output = ask_gemini(f"{system_prompt}\n\n{user_prompt}")
+    else:
+        response = client.messages.create(
+            model="claude-3-haiku-20240307",
+            system=system_prompt,
+            max_tokens=1024,
+            temperature=0.2,
+            messages=[{"role": "user", "content": user_prompt}]
+        )
+        output = response.content[0].text.strip()
+
+    # Update token & cost usage
+    llm_token_usage[model] += prompt_tokens
+    cost = (prompt_tokens / 1000.0) * COST_PER_1K_TOKENS[model]
+    llm_cost_usage[model] += cost
+
+    # ✅ Print per-call usage
+    print(f"\n💬 [LLM Used: {model}]")
+    print(f"Tokens used: {prompt_tokens}")
+    print(f"Estimated cost: ${round(cost, 6)}")
+
+    return output
+
+    # Token and cost estimation
+    llm_token_usage[model] += prompt_tokens
+    llm_cost_usage[model] += (prompt_tokens / 1000.0) * COST_PER_1K_TOKENS[model]
+    return output
+
+
 
 def safe_parse_json(text):
     try:
@@ -209,7 +251,7 @@ def reflect_on_plan(user_prompt, plan, memory):
         "results_so_far": memory.get("tool_results_history", []),
         "reflections_so_far": memory.get("reflections", [])
     }
-    output = ask_claude(REFLECT_PLAN_PROMPT, json.dumps(payload, indent=2))
+    output = ask_llm(REFLECT_PLAN_PROMPT, json.dumps(payload, indent=2))
     print("\n[DEBUG] Claude raw reflection output:\n", output)
     parsed = safe_parse_json(output)
     if isinstance(parsed, list):
@@ -228,7 +270,7 @@ def reflect_on_results(user_prompt, results, memory):
         "plan_history": memory.get("tool_plan_history", []),
         "reflections_so_far": memory.get("reflections", [])
     }
-    output = ask_claude(REFLECT_RESULTS_PROMPT, json.dumps(payload, indent=2))
+    output = ask_llm(REFLECT_RESULTS_PROMPT, json.dumps(payload, indent=2))
     parsed = safe_parse_json(output)
 
     if isinstance(parsed, dict) and parsed.get("status") in ["goal_met", "needs_more"]:
@@ -291,8 +333,34 @@ def extract_subdomains(results, original_domain):
 def parse_next_plan(plan):
     return safe_parse_json(plan) if isinstance(plan, str) else plan
 
+def save_final_llm_cost_log():
+    if all(cost == 0 for cost in llm_cost_usage.values()):
+        return  
+
+    os.makedirs("logs", exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = f"logs/llm_cost_log_{timestamp}.json"
+
+    with open(log_path, "w") as f:
+        json.dump({
+            "timestamp": timestamp,
+            "llm_cost_usage": llm_cost_usage,
+            "llm_token_usage": llm_token_usage
+        }, f, indent=2)
+
+    print(f"\n Final LLM cost log saved to {log_path}")
+
+######## MAIN #########
 def main():
-    user_prompt = input("Enter your OSINT prompt: ").strip()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("prompt", help="User prompt for OSINT")
+    parser.add_argument("--model", choices=["claude", "gpt", "gemini"], default="claude", help="Choose LLM model")
+    args = parser.parse_args()
+
+    global model
+    model = args.model
+    user_prompt = args.prompt.strip()
+
     if not user_prompt:
         print("⚠️ Please enter a valid OSINT prompt.")
         return
@@ -313,28 +381,27 @@ def main():
     already_run = set()
 
     try:
-        tool_plan_raw = ask_claude(PRE_PROCESSING_PROMPT, user_prompt)
+        tool_plan_raw = ask_llm(PRE_PROCESSING_PROMPT, user_prompt)
         parsed_plan = safe_parse_json(tool_plan_raw)
         if not parsed_plan:
-            print("❌ Claude returned invalid tool plan.")
+            print("❌ LLM returned invalid tool plan.")
             return
         original_domain = extract_original_domain_from_tool_plan(parsed_plan)
         tool_plan = filter_supported_tools(parsed_plan, original_domain=original_domain)
     except Exception as e:
-        print(f"❌ Claude preprocessing failed: {e}")
+        print(f"❌ LLM preprocessing failed: {e}")
         return
 
     if not tool_plan:
-        print("❌ No valid tools in Claude plan.")
+        print("❌ No valid tools in LLM plan.")
         return
 
     while loops < max_loops:
         loops += 1
-        print("############################")
-        print(f"\n🔄 Loop {loops} - Executing tool plan...")
-        print("############################")
+        print(f"\n Loop {loops} - Executing tool plan...")
+        
 
-        print("\n📋 Current Tool Plan:\n", json.dumps(tool_plan, indent=2))
+        print("\n Current Tool Plan:\n", json.dumps(tool_plan, indent=2))
         all_results = []
 
         for step in tool_plan:
@@ -342,14 +409,14 @@ def main():
             inputs = step["inputs"]
             key = (tool, json.dumps(inputs, sort_keys=True))
             if key in already_run:
-                print(f"⏭️ Skipping already run: {tool} with {inputs}")
+                print(f" Skipping already run: {tool} with {inputs}")
                 continue
             already_run.add(key)
             print(f"\n⚙️ Running {tool} with inputs: {inputs}")
             t0 = time.time()
             result = run_tool(tool, inputs)
             t1 = time.time()
-            print(f"✅ Result:\n{json.dumps(result, indent=2)}")
+            print(f" Result:\n{json.dumps(result, indent=2)}")
             all_results.append({"tool": tool, "inputs": inputs, "result": result})
             transcript["steps"].append({
                 "step": f"run_{tool}",
@@ -361,7 +428,7 @@ def main():
         short_term_memory["tool_plan_history"].append(tool_plan)
         short_term_memory["tool_results_history"].append(all_results)
 
-        # ✅ Now reflect on the results
+        # ✅ Reflect on the results
         result_review = reflect_on_results(user_prompt, all_results, short_term_memory)
         short_term_memory["reflections"].append({
             "type": "result",
@@ -382,21 +449,27 @@ def main():
             print("⚠️ Invalid result reflection. Exiting.")
             break
         else:
-            # Just print Claude's message for visibility, but DON'T break
-            print("💬 Claude reflection:\n", result_review.get("raw"))
-            # Continue to next loop
+            print(" LLM reflection:\n", result_review.get("raw"))
 
     all_results_flat = [r for loop in short_term_memory["tool_results_history"] for r in loop]
     try:
-        post_output = ask_claude(POST_PROCESSING_PROMPT, json.dumps(all_results_flat, indent=2))
+        post_output = ask_llm(POST_PROCESSING_PROMPT, json.dumps(all_results_flat, indent=2))
     except Exception as e:
-        post_output = f"❌ Claude summary failed: {e}"
+        post_output = f" LLM summary failed: {e}"
 
-    print("\n🧠 Final Summary:\n", post_output)
+    print("\n Final Summary:\n", post_output)
 
     transcript["steps"].append({"step": "summary", "summary": post_output})
     transcript["end_time"] = str(datetime.now())
     transcript["duration_total_sec"] = round((datetime.now() - start_time).total_seconds(), 2)
+    transcript["start_time"] = str(start_time)  # Optional
+    transcript["llm_usage"] = {
+    m: {
+        "tokens_used": llm_token_usage[m],
+        "estimated_cost_usd": round(llm_cost_usage[m], 6)
+    }
+    for m in llm_token_usage if llm_token_usage[m] > 0
+}
 
     with open(f"{TRANSCRIPT_DIR}/transcript_{timestamp}.json", "w") as f:
         json.dump(transcript, f, indent=2)
@@ -405,7 +478,11 @@ def main():
     with open(f"{TRANSCRIPT_DIR}/summary_{timestamp}.txt", "w") as f:
         f.write(post_output)
 
-    print(f"\n📄 Saved transcript and memory to logs/")
+    save_final_llm_cost_log()  
+
+    print(f"\n Saved transcript and memory to logs/")
+
 
 if __name__ == "__main__":
     main()
+    
