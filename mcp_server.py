@@ -9,26 +9,26 @@ from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 
-# Load environment variables
+
 load_dotenv()
 
-# Configurations
+
 SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
 MAX_SUBFINDER_RESULTS = int(os.getenv("MAX_SUBFINDER_RESULTS", 20))
 MAX_HARVESTER_EMAILS = int(os.getenv("MAX_HARVESTER_EMAILS", 10))
 MAX_HARVESTER_HOSTS = int(os.getenv("MAX_HARVESTER_HOSTS", 10))
-MAX_RESULTS = 5
+MAX_RESULTS = 5                                                                                                             
 MAX_LINE_LENGTH = 1000
 
-# Initialize FastAPI
+
 app = FastAPI()
 
-# Request schema
+
 class ToolRequest(BaseModel):
     tool: str
     inputs: dict
 
-# API endpoint to run tools
+
 @app.post("/run_tool")
 async def run_tool(req: ToolRequest):
     tool = req.tool.lower()
@@ -50,7 +50,6 @@ async def run_tool(req: ToolRequest):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-# ---------------- Tool Functions ----------------
 
 def run_theharvester(inputs):
     domain = inputs.get("domain", "")
@@ -93,7 +92,7 @@ def run_subfinder(inputs):
         return JSONResponse(status_code=400, content={"error": "Domain is required for Subfinder."})
 
     output_file = f"subfinder_{domain}.json"
-    subfinder_path = "/Users/rohahahan/go/bin/subfinder"  # Adjust if needed
+    subfinder_path = "/Users/rohahahan/go/bin/subfinder" 
     cmd = f"{subfinder_path} -d {domain} -o {output_file} -silent -json"
 
     try:
@@ -170,7 +169,7 @@ def run_dnsx(inputs):
 
     input_file = "dnsx_input.txt"
     output_file = "dnsx_output.txt"
-    dnsx_path = "/Users/rohahahan/go/bin/dnsx"  # ✅ Confirm path
+    dnsx_path = "/Users/rohahahan/go/bin/dnsx"  
 
     with open(input_file, "w") as f:
         f.write("\n".join(domains))
@@ -201,7 +200,7 @@ def run_dnsx(inputs):
             return result
 
         parsed_results = []
-        for line in raw_lines[:50]:  # Cap to avoid large payloads
+        for line in raw_lines[:50]:  
             line = strip_ansi(line).strip()
 
             if "[" not in line or "]" not in line:
@@ -248,3 +247,4 @@ def run_dnsx(inputs):
         return JSONResponse(status_code=500, content={"error": f"dnsx failed: {str(e)}"})
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Unexpected error: {str(e)}"})
+    

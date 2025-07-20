@@ -11,17 +11,16 @@ import argparse
 from llm_gpt import ask_gpt
 from llm_gemini import ask_gemini
 
-# === Cost Tracking Constants (per 1k tokens) ===
 COST_PER_1K_TOKENS = {
     "claude": 0.25,     # Claude Haiku
     "gpt": 0.0015,      # GPT-3.5 Turbo
-    "gemini": 0.00025   # Gemini Pro (estimated, adjust if exact known)
+    "gemini": 0.00025   # Gemini Pro 
 }
 
-# === Global Cost Tracking ===
+
 llm_token_usage = {"claude": 0, "gpt": 0, "gemini": 0}
 llm_cost_usage = {"claude": 0.0, "gpt": 0.0, "gemini": 0.0}
-total_cost_limit = 1.0  # $1 budget
+total_cost_limit = 1.0  # $1 budget ##### LIMIT 
 
 load_dotenv()
 CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
@@ -33,7 +32,7 @@ client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
 
 ALLOWED_TOOLS = {"theHarvester", "subfinder", "dnsx", "whois", "shodan"}
 
-# --- Prompts ---
+
 PRE_PROCESSING_PROMPT = """You are an OSINT task planner.
 
 Your job is to turn a user's recon goal into a step-by-step JSON tool plan using only the tools listed below.
@@ -135,7 +134,7 @@ Do not use natural language strings. Use only these tools:
 - shodan
 """
 
-# --- Utility Functions ---
+
 def ask_llm(system_prompt, user_prompt):
     global model
     prompt_tokens = len(system_prompt.split()) + len(user_prompt.split())
@@ -154,19 +153,19 @@ def ask_llm(system_prompt, user_prompt):
         )
         output = response.content[0].text.strip()
 
-    # Update token & cost usage
+    
     llm_token_usage[model] += prompt_tokens
     cost = (prompt_tokens / 1000.0) * COST_PER_1K_TOKENS[model]
     llm_cost_usage[model] += cost
 
-    # ✅ Print per-call usage
+    
     print(f"\n💬 [LLM Used: {model}]")
     print(f"Tokens used: {prompt_tokens}")
     print(f"Estimated cost: ${round(cost, 6)}")
 
     return output
 
-    # Token and cost estimation
+    
     llm_token_usage[model] += prompt_tokens
     llm_cost_usage[model] += (prompt_tokens / 1000.0) * COST_PER_1K_TOKENS[model]
     return output
@@ -277,7 +276,7 @@ def reflect_on_results(user_prompt, results, memory):
         if parsed["status"] == "needs_more":
             parsed.setdefault("next_plan", [])
 
-            # ✅ Extract only valid IPs from filtered dnsx results
+            
             dnsx_ips = []
             for r in results:
                 if r["tool"] != "dnsx":
@@ -293,7 +292,7 @@ def reflect_on_results(user_prompt, results, memory):
             for ip in sorted(set(dnsx_ips)):
                 parsed["next_plan"].append({"tool": "shodan", "inputs": {"query": ip}})
 
-            # ✅ Only add DNSX again if new subdomains were found
+            
             original_domain = extract_original_domain_from_tool_plan(
                 memory.get("tool_plan_history", [])[-1] if memory.get("tool_plan_history") else []
             )
@@ -377,7 +376,7 @@ def main():
     }
 
     loops = 0
-    max_loops = 3
+    max_loops = 3 ####### LIMIT 
     already_run = set()
 
     try:
@@ -428,7 +427,7 @@ def main():
         short_term_memory["tool_plan_history"].append(tool_plan)
         short_term_memory["tool_results_history"].append(all_results)
 
-        # ✅ Reflect on the results
+        
         result_review = reflect_on_results(user_prompt, all_results, short_term_memory)
         short_term_memory["reflections"].append({
             "type": "result",
@@ -462,7 +461,7 @@ def main():
     transcript["steps"].append({"step": "summary", "summary": post_output})
     transcript["end_time"] = str(datetime.now())
     transcript["duration_total_sec"] = round((datetime.now() - start_time).total_seconds(), 2)
-    transcript["start_time"] = str(start_time)  # Optional
+    transcript["start_time"] = str(start_time)  
     transcript["llm_usage"] = {
     m: {
         "tokens_used": llm_token_usage[m],
