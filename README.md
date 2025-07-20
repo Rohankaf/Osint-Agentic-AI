@@ -19,7 +19,7 @@ A modular, LLM-driven OSINT automation framework that leverages Claude, GPT, and
 
 ---
 
-##Architecture
+## Architecture
 
 ```mermaid
 graph TD
@@ -50,7 +50,7 @@ graph TD
 ---
 
 ## 📁 Project Structure
-
+```bash
 .
 ├── llm_client.py # Core LLM control loop
 ├── mcp_server.py # FastAPI backend for tool execution
@@ -58,7 +58,7 @@ graph TD
 ├── logs/ # Run memory + transcript logs
 ├── .env # Your secret API keys (not committed)
 └── README.md
-
+```
 
 ---
 
@@ -94,9 +94,9 @@ python3 llm_client.py
 ```
 
 Then type a prompt like:
-
+```
 Run full recon on example.com
-
+```
 
 
 
