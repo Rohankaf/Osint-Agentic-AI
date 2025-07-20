@@ -21,26 +21,19 @@ A modular, LLM-driven OSINT automation framework that leverages Claude, GPT, and
 
 ##  Architecture
 
-User Prompt
-   ↓
-LLM-based Planning & Reasoning
-   (Claude / GPT-3.5 / Gemini)
-   ↓
-Tool Orchestration Layer
-   ↳ Reflexive Multi-loop Execution
-   ↳ Plan → Run → Reflect → Repeat
-   ↓
-FastAPI MCP (Tool Execution Server)
-   ↳ subfinder
-   ↳ theHarvester
-   ↳ whois
-   ↳ dnsx
-   ↳ shodan
-   ↓
-LLM Reflection & Plan Adjustment
-   ↓
-Final Output & Summary Generation
-   ↳ Results + Transcript + Token/Cost Log
+### Architecture
+
+1. **User Prompt**
+2. ⬇️ LLM-based Planning & Reasoning  
+   - Claude / GPT-3.5 / Gemini
+3. ⬇️ Tool Orchestration Layer
+4. ⬇️ Reflexive Multi-loop Execution
+   - Plan → Run → Reflect → Repeat
+5. ⬇️ FastAPI MCP (Tool Execution Server)
+   - subfinder, theHarvester, whois, dnsx, shodan
+6. ⬇️ LLM Reflection & Plan Adjustment
+7. ⬇️ Final Output & Summary Generation
+8. ⬇️ Results + Transcript + Token/Cost Log
 
 
 ---
