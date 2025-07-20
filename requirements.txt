@@ -1,0 +1,7 @@
+anthropic
+openai
+google-generativeai
+python-dotenv
+requests
+fastapi
+uvicorn
