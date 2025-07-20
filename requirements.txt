@@ -1,7 +1,9 @@
 anthropic
 openai
-google-generativeai
-python-dotenv
+shodan
+whois
 requests
+python-dotenv
 fastapi
-uvicorn
+pydantic
+google-generativeai
