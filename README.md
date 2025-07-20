@@ -65,7 +65,7 @@ Final LLM Summary (Full recon output)
 
 ---
 
-## ⚙️ Setup
+## Setup
 
 ```bash
 git clone https://github.com/codex500/Osint-Agentic-AI
@@ -76,20 +76,28 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 ```
-Configure .env
+## Configure .env
 In the project root, create a .env file:
+
+```bash
 CLAUDE_API_KEY=your-anthropic-key
 SHODAN_API_KEY=your-shodan-key
 OPENAI_API_KEY=your-openAi-key
 GEMINI_API_KEY=your_gemini_key_here
+```
 
-Run the FastAPI MCP Server:
+## Run the FastAPI MCP Server:
+```bash
 uvicorn mcp_server:app --reload
+```
 
 Run the OSINT Agent:
+```bash
 python3 llm_client.py
+```
 
 Then type a prompt like:
+
 Run full recon on example.com
 
 
