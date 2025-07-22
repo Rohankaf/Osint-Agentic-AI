@@ -1,10 +1,11 @@
 anthropic
 openai>=1.0.0
+google-generativeai
+fastapi
+uvicorn
 shodan
+theHarvester
 whois
 requests
 python-dotenv
-fastapi
 pydantic
-google-generativeai
-uvicorn
