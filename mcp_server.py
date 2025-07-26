@@ -92,7 +92,7 @@ def run_subfinder(inputs):
         return JSONResponse(status_code=400, content={"error": "Domain is required for Subfinder."})
 
     output_file = f"subfinder_{domain}.json"
-    subfinder_path = "/Users/rohahahan/go/bin/subfinder" 
+    subfinder_path = "subfinder"
     cmd = f"{subfinder_path} -d {domain} -o {output_file} -silent -json"
 
     try:
@@ -156,20 +156,27 @@ def run_whois(inputs):
         return {"tool": "whois", "error": "Target is required"}
 
     try:
-        raw_result = whois.whois(target)
-        cleaned = {key: clean_whois_value(value) for key, value in raw_result.items()}
-        return {"tool": "whois", "target": target, "results": cleaned}
+        result = subprocess.run(["whois", target], capture_output=True, text=True, timeout=15)
+        return {
+            "tool": "whois",
+            "target": target,
+            "output": result.stdout.strip()
+        }
     except Exception as e:
         return {"tool": "whois", "target": target, "error": str(e)}
 
 def run_dnsx(inputs):
+    import subprocess
+    import os
+    from fastapi.responses import JSONResponse
+
     domains = inputs.get("domains", [])
     if not domains or not isinstance(domains, list):
         return JSONResponse(status_code=400, content={"error": "A list of domains is required for dnsx."})
 
     input_file = "dnsx_input.txt"
     output_file = "dnsx_output.txt"
-    dnsx_path = "/Users/rohahahan/go/bin/dnsx"  
+    dnsx_path = "/usr/local/bin/dnsx"
 
     with open(input_file, "w") as f:
         f.write("\n".join(domains))
@@ -247,4 +254,9 @@ def run_dnsx(inputs):
         return JSONResponse(status_code=500, content={"error": f"dnsx failed: {str(e)}"})
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Unexpected error: {str(e)}"})
+
+# 🔥 Add this block to start the FastAPI server
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
     
