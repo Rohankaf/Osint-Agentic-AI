@@ -1,6 +1,4 @@
-# ------------------------------
-# Stage 1: Build Go tools
-# ------------------------------
+
 FROM golang:1.24-bullseye AS go-builder
 
 WORKDIR /go/src/tools
@@ -10,9 +8,7 @@ ENV GO111MODULE=on
 RUN go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@v2.8.0 && \
     GO111MODULE=on go install github.com/projectdiscovery/dnsx/cmd/dnsx@v1.1.3
 
-# ------------------------------
-# Stage 2: Final OSINT image
-# ------------------------------
+
 FROM python:3.12-slim AS osint-final
 
 ENV DEBIAN_FRONTEND=noninteractive
