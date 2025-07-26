@@ -54,6 +54,9 @@ graph TD
 .
 ├── llm_client.py # Core LLM control loop
 ├── mcp_server.py # FastAPI backend for tool execution
+├── Dockerfile # Docker image definition
+├── build.sh # Shell script to build Docker image
+├── run.sh # Shell script to run container
 ├── requirements.txt # Python dependencies
 ├── logs/ # Run memory + transcript logs
 ├── .env # Your secret API keys (not committed)
@@ -82,18 +85,25 @@ SHODAN_API_KEY=your-shodan-key
 OPENAI_API_KEY=your-openAi-key
 GEMINI_API_KEY=your_gemini_key_here
 ```
+## Docker Setup
 
-## Run the FastAPI MCP Server:
+Build Docker Image
 ```bash
-uvicorn mcp_server:app --reload
+chmod +x build.sh
+./build.sh
 ```
-
-Run the OSINT Agent:
+Run Docker Container
 ```bash
-python3 llm_client.py
+chmod +x run.sh
+./run.sh
 ```
 
-Then type a prompt like:
+You can give any recon-related prompt:
+```bash
+python3 llm_client.py "Run full recon on example.com" --model claude
 ```
-Run full recon on example.com
+Or use GPT/Gemini:
+```bash
+python3 llm_client.py "Enumerate emails and probe DNS on example.com" --model gpt/gemini
 ```
+
