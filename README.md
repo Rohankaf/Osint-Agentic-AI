@@ -86,7 +86,7 @@ OPENAI_API_KEY=your-openAi-key
 GEMINI_API_KEY=your_gemini_key_here
 ```
 ## Docker Setup
-
+First Install Docker into your system and for that you can follow the standard instruction available on: https://www.docker.com/products/docker-desktop/
 Build Docker Image
 ```bash
 chmod +x build.sh
