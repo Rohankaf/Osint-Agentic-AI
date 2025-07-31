@@ -1,4 +1,3 @@
-
 import os 
 import json
 import time
@@ -11,16 +10,17 @@ import argparse
 from llm_gpt import ask_gpt
 from llm_gemini import ask_gemini
 
-COST_PER_1K_TOKENS = {
-    "claude": 0.25,     # Claude Haiku
-    "gpt": 0.0015,      # GPT-3.5 Turbo
-    "gemini": 0.00025   # Gemini Pro 
-}
+model = None 
 
+COST_PER_1K_TOKENS = {
+    "claude": 0.25,
+    "gpt": 0.0015,
+    "gemini": 0.00025
+}
 
 llm_token_usage = {"claude": 0, "gpt": 0, "gemini": 0}
 llm_cost_usage = {"claude": 0.0, "gpt": 0.0, "gemini": 0.0}
-total_cost_limit = 1.0  # $1 budget ##### LIMIT 
+total_cost_limit = 1.0
 
 load_dotenv()
 CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
@@ -165,13 +165,6 @@ def ask_llm(system_prompt, user_prompt):
     print(f"Estimated cost: ${round(cost, 6)}")
 
     return output
-
-    
-    llm_token_usage[model] += prompt_tokens
-    llm_cost_usage[model] += (prompt_tokens / 1000.0) * COST_PER_1K_TOKENS[model]
-    return output
-
-
 
 def safe_parse_json(text):
     try:
@@ -366,12 +359,13 @@ def save_final_llm_cost_log():
 
 ######## MAIN #########
 def main():
+    global model
+
     parser = argparse.ArgumentParser()
     parser.add_argument("prompt", help="User prompt for OSINT")
     parser.add_argument("--model", choices=["claude", "gpt", "gemini"], default="claude", help="Choose LLM model")
     args = parser.parse_args()
 
-    global model
     model = args.model
     user_prompt = args.prompt.strip()
 
