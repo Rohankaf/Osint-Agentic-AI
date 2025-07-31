@@ -40,7 +40,8 @@ Your job is to turn a user's recon goal into a step-by-step JSON tool plan using
  Supported tools (use only these — do not invent others):
 - theHarvester (input: domain)
 - subfinder (input: domain)
-- shodan (input: IP only — use only {"query": "IP"} format, never "host" or domain names)
+- shodan (input: IP only — accepts {"ip"}, {"query"}, {"domain"}, or {"target"} 
+# but extracts and validates only IPv4/IPv6 addresses, skips domains or hostnames)
 - whois (input: domain or IP as 'target')
 - dnsx (input: list of domains)
 
@@ -57,7 +58,7 @@ Your job is to turn a user's recon goal into a step-by-step JSON tool plan using
 [
   {"tool": "theHarvester", "inputs": {"domain": "example.com"}},
   {"tool": "subfinder", "inputs": {"domain": "example.com"}},
-  {"tool": "shodan", "inputs": {"query": "example.com"}},
+  {"tool": "shodan", "inputs": {"ip": "8.8.8.8"}},
   {"tool": "whois", "inputs": {"target": "example.com"}}
   {"tool": "dnsx", "inputs": {"domains": ["sub1.example.com", "sub2.example.com"]}}
 ]
@@ -84,7 +85,7 @@ Tools you may use:
 - subfinder (input: domain)
 - dnsx (input: domains list)
 - whois (input: target)
-- shodan (input: query — must be IP only)
+- shodan (input: ip)
 
 Very strict output rules:
 - If the plan is already solid, return only: {"status": "good"}
@@ -95,7 +96,7 @@ Very strict output rules:
 Example of correct output:
 [
   {"tool": "dnsx", "inputs": {"domains": ["sub1.example.com"]}},
-  {"tool": "shodan", "inputs": {"query": "1.2.3.4"}}
+  {"tool": "shodan", "inputs": {"ip": "1.2.3.4"}}
 ]
 
 Return ONLY valid JSON.
@@ -186,6 +187,18 @@ def safe_parse_json(text):
 
 def run_tool(tool, inputs):
     try:
+        if tool == "shodan":
+            query = inputs.get("ip") or inputs.get("query")
+            if query:
+                try:
+                    ip_obj = ipaddress.ip_address(query.strip())
+                    if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved or ip_obj.is_multicast:
+                        return {
+                            "error": f"Shodan cannot scan private/reserved IPs ({query}). A Shodan Premium Tier is required for some advanced scans."
+                        }
+                except ValueError:
+                    return {"error": f"Invalid IP address for Shodan: {query}"}
+
         response = requests.post(MCP_URL, json={"tool": tool, "inputs": inputs}, timeout=60)
         return response.json()
     except Exception as e:
@@ -205,6 +218,7 @@ def filter_supported_tools(tool_plan, original_domain=None):
             domain = inputs.get("domain")
             if isinstance(domain, str) and domain.strip():
                 cleaned.append({"tool": tool, "inputs": {"domain": domain.strip()}})
+
         elif tool == "dnsx":
             domains = inputs.get("domains")
             if isinstance(domains, list):
@@ -218,14 +232,16 @@ def filter_supported_tools(tool_plan, original_domain=None):
                             valid.append(d)
                 if valid:
                     cleaned.append({"tool": "dnsx", "inputs": {"domains": valid}})
+
         elif tool == "shodan":
             query = inputs.get("query") or inputs.get("ip") or inputs.get("domain") or inputs.get("target")
             if isinstance(query, str):
                 try:
                     ip = str(ipaddress.ip_address(query.strip()))
-                    cleaned.append({"tool": "shodan", "inputs": {"query": ip}})
+                    cleaned.append({"tool": "shodan", "inputs": {"ip": ip}})
                 except ValueError:
-                    pass
+                    pass  
+
         elif tool == "whois":
             target = None
             for key in ("target", "domain", "ip", "domains"):
@@ -241,7 +257,6 @@ def filter_supported_tools(tool_plan, original_domain=None):
             if target:
                 cleaned.append({"tool": "whois", "inputs": {"target": target}})
     return cleaned
-
 def reflect_on_plan(user_prompt, plan, memory):
     payload = {
         "goal": user_prompt,

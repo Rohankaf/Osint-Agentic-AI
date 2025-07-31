@@ -1,33 +1,29 @@
 import os
 import subprocess
-import shodan
 import whois
 import datetime
 import json
+import ipaddress
+from shodan import Shodan, APIError
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 
-
 load_dotenv()
-
 
 SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
 MAX_SUBFINDER_RESULTS = int(os.getenv("MAX_SUBFINDER_RESULTS", 20))
 MAX_HARVESTER_EMAILS = int(os.getenv("MAX_HARVESTER_EMAILS", 10))
 MAX_HARVESTER_HOSTS = int(os.getenv("MAX_HARVESTER_HOSTS", 10))
-MAX_RESULTS = 5                                                                                                             
+MAX_RESULTS = 5
 MAX_LINE_LENGTH = 1000
 
-
 app = FastAPI()
-
 
 class ToolRequest(BaseModel):
     tool: str
     inputs: dict
-
 
 @app.post("/run_tool")
 async def run_tool(req: ToolRequest):
@@ -50,6 +46,15 @@ async def run_tool(req: ToolRequest):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+def is_valid_public_ip(ip):
+    try:
+        ip_obj = ipaddress.ip_address(ip)
+        return not (ip_obj.is_private or ip_obj.is_reserved or ip_obj.is_loopback or ip_obj.is_multicast)
+    except ValueError:
+        return False
+
+def is_valid_ip_for_shodan(ip):
+    return ip not in {"1.2.3.4", "0.0.0.0"} and not ip.startswith("127.") and not ip.startswith("169.254.")
 
 def run_theharvester(inputs):
     domain = inputs.get("domain", "")
@@ -92,8 +97,7 @@ def run_subfinder(inputs):
         return JSONResponse(status_code=400, content={"error": "Domain is required for Subfinder."})
 
     output_file = f"subfinder_{domain}.json"
-    subfinder_path = "subfinder"
-    cmd = f"{subfinder_path} -d {domain} -o {output_file} -silent -json"
+    cmd = f"subfinder -d {domain} -o {output_file} -silent -json"
 
     try:
         subprocess.run(cmd, shell=True, check=True, timeout=60)
@@ -117,14 +121,31 @@ def run_subfinder(inputs):
         return JSONResponse(status_code=500, content={"error": f"Parsing subfinder output failed: {str(e)}"})
 
 def run_shodan(inputs):
-    ip = inputs.get("ip", "")
+    ip = inputs.get("ip", "") or inputs.get("query", "")
+    print("\nDEBUG: Shodan received inputs =", inputs, "→ resolved IP =", ip)
+
     if not ip:
         return JSONResponse(status_code=400, content={"error": "IP is required for Shodan."})
 
-    api = shodan.Shodan(SHODAN_API_KEY)
+    if not is_valid_public_ip(ip) or not is_valid_ip_for_shodan(ip):
+        print(f"Skipping Shodan for non-routable or dummy IP: {ip}")
+        return {
+            "tool": "shodan",
+            "ip": ip,
+            "note": "Skipping private, reserved, or dummy IP — Shodan only supports public, meaningful IPs."
+        }
+
+    try:
+        ipaddress.ip_address(ip)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"error": f"Invalid IP format: {ip}"})
+
+    api = Shodan(SHODAN_API_KEY)
+
     try:
         host = api.host(ip)
         banners = [item.get("data", "")[:MAX_LINE_LENGTH] for item in host.get("data", [])[:MAX_RESULTS]]
+
         return {
             "tool": "shodan",
             "ip": ip,
@@ -136,19 +157,40 @@ def run_shodan(inputs):
             "hostnames": host.get("hostnames"),
             "matches_count": len(host.get("data", []))
         }
-    except shodan.APIError as e:
-        if "Access Denied" in str(e):
-            return {"tool": "shodan", "ip": ip, "note": "This data requires Shodan premium tier."}
-        return JSONResponse(status_code=500, content={"error": f"Shodan error: {str(e)}"})
 
-def clean_whois_value(value):
-    if isinstance(value, (datetime.date, datetime.datetime)):
-        return value.isoformat()
-    elif isinstance(value, set):
-        return list(value)
-    elif isinstance(value, bytes):
-        return value.decode("utf-8", errors="ignore")
-    return value
+    except APIError as e:
+        error_msg = str(e).lower()
+        print("Shodan APIError triggered:", error_msg)
+
+        if any(term in error_msg for term in [
+            "upgrade your api plan", "requires api plan",
+            "access denied", "not allowed", "403", "not permitted"
+        ]):
+            return JSONResponse(
+                status_code=402,
+                content={"error": "This Shodan query requires a paid API plan."}
+            )
+
+        try:
+            results = api.search(f"ip:{ip}")
+            matches = results.get("matches", [])
+            banners = [match.get("data", "")[:MAX_LINE_LENGTH] for match in matches[:MAX_RESULTS]]
+
+            return {
+                "tool": "shodan",
+                "ip": ip,
+                "banners": banners,
+                "matches_count": len(matches),
+                "note": "Used search() fallback due to API limitations"
+            }
+
+        except APIError as fallback_error:
+            return JSONResponse(
+                status_code=500,
+                content={"error": f"Fallback Shodan search error: {str(fallback_error)}"}
+            )
+
+    return JSONResponse(status_code=500, content={"error": "Unknown Shodan error."})
 
 def run_whois(inputs):
     target = inputs.get("target")
@@ -166,10 +208,6 @@ def run_whois(inputs):
         return {"tool": "whois", "target": target, "error": str(e)}
 
 def run_dnsx(inputs):
-    import subprocess
-    import os
-    from fastapi.responses import JSONResponse
-
     domains = inputs.get("domains", [])
     if not domains or not isinstance(domains, list):
         return JSONResponse(status_code=400, content={"error": "A list of domains is required for dnsx."})
@@ -207,19 +245,15 @@ def run_dnsx(inputs):
             return result
 
         parsed_results = []
-        for line in raw_lines[:50]:  
+        for line in raw_lines[:50]:
             line = strip_ansi(line).strip()
-
             if "[" not in line or "]" not in line:
                 continue
-
             parts = line.split("[")
             if len(parts) < 3:
                 continue
-
             domain = parts[0].strip()
             ip = parts[2].replace("]", "").strip()
-
             if domain and ip:
                 parsed_results.append({"domain": domain, "ip": ip})
 
@@ -255,8 +289,6 @@ def run_dnsx(inputs):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"Unexpected error: {str(e)}"})
 
-# 🔥 Add this block to start the FastAPI server
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
-    
