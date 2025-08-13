@@ -1,14 +1,15 @@
 import os
 import subprocess
-import whois
-import datetime
 import json
+import re
+import time
 import ipaddress
+from dotenv import load_dotenv
 from shodan import Shodan, APIError
 from fastapi import FastAPI
 from pydantic import BaseModel
+from datetime import datetime
 from fastapi.responses import JSONResponse
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -25,10 +26,21 @@ class ToolRequest(BaseModel):
     tool: str
     inputs: dict
 
+class MultiToolRequest(BaseModel):
+    tool_steps: list[ToolRequest]
+
+def normalize_shodan_inputs(tool_steps):
+    for step in tool_steps:
+        if step["tool"] == "shodan":
+            if "query" in step["inputs"]:
+                step["inputs"]["ip"] = step["inputs"].pop("query")
+    return tool_steps
+
 @app.post("/run_tool")
 async def run_tool(req: ToolRequest):
-    tool = req.tool.lower()
-    inputs = req.inputs
+    step = normalize_shodan_inputs([req.dict()])[0]
+    tool = step["tool"].lower()
+    inputs = step["inputs"]
 
     try:
         if tool == "theharvester":
@@ -45,6 +57,34 @@ async def run_tool(req: ToolRequest):
             return JSONResponse(status_code=400, content={"error": f"Unknown tool: {tool}"})
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.post("/run_tools")
+async def run_multiple_tools(req: MultiToolRequest):
+    normalized_steps = normalize_shodan_inputs([step.dict() for step in req.tool_steps])
+    results = []
+
+    for step in normalized_steps:
+        tool = step["tool"].lower()
+        inputs = step["inputs"]
+        try:
+            if tool == "theharvester":
+                result = run_theharvester(inputs)
+            elif tool == "subfinder":
+                result = run_subfinder(inputs)
+            elif tool == "shodan":
+                result = run_shodan(inputs)
+            elif tool == "whois":
+                result = run_whois(inputs)
+            elif tool == "dnsx":
+                result = run_dnsx(inputs)
+            else:
+                result = {"error": f"Unknown tool: {tool}"}
+        except Exception as e:
+            result = {"error": str(e), "tool": tool}
+
+        results.append(result)
+
+    return results
 
 def is_valid_public_ip(ip):
     try:
@@ -121,91 +161,74 @@ def run_subfinder(inputs):
         return JSONResponse(status_code=500, content={"error": f"Parsing subfinder output failed: {str(e)}"})
 
 def run_shodan(inputs):
-    ip = inputs.get("ip", "") or inputs.get("query", "")
-    print("\nDEBUG: Shodan received inputs =", inputs, "→ resolved IP =", ip)
-
-    if not ip:
-        return JSONResponse(status_code=400, content={"error": "IP is required for Shodan."})
-
-    if not is_valid_public_ip(ip) or not is_valid_ip_for_shodan(ip):
-        print(f"Skipping Shodan for non-routable or dummy IP: {ip}")
-        return {
-            "tool": "shodan",
-            "ip": ip,
-            "note": "Skipping private, reserved, or dummy IP — Shodan only supports public, meaningful IPs."
-        }
-
-    try:
-        ipaddress.ip_address(ip)
-    except ValueError:
-        return JSONResponse(status_code=400, content={"error": f"Invalid IP format: {ip}"})
-
     api = Shodan(SHODAN_API_KEY)
 
-    try:
-        host = api.host(ip)
-        banners = [item.get("data", "")[:MAX_LINE_LENGTH] for item in host.get("data", [])[:MAX_RESULTS]]
-
-        return {
-            "tool": "shodan",
-            "ip": ip,
-            "organization": host.get("org"),
-            "os": host.get("os"),
-            "ports": host.get("ports", []),
-            "banners": banners,
-            "country": host.get("country_name"),
-            "hostnames": host.get("hostnames"),
-            "matches_count": len(host.get("data", []))
-        }
-
-    except APIError as e:
-        error_msg = str(e).lower()
-        print("Shodan APIError triggered:", error_msg)
-
-        if any(term in error_msg for term in [
-            "upgrade your api plan", "requires api plan",
-            "access denied", "not allowed", "403", "not permitted"
-        ]):
-            return JSONResponse(
-                status_code=402,
-                content={"error": "This Shodan query requires a paid API plan."}
-            )
-
+    if "query" in inputs:
+        query = inputs["query"]
         try:
-            results = api.search(f"ip:{ip}")
-            matches = results.get("matches", [])
-            banners = [match.get("data", "")[:MAX_LINE_LENGTH] for match in matches[:MAX_RESULTS]]
-
+            results = api.search(query)
             return {
                 "tool": "shodan",
-                "ip": ip,
-                "banners": banners,
-                "matches_count": len(matches),
-                "note": "Used search() fallback due to API limitations"
+                "query": query,
+                "matches_count": len(results.get("matches", [])),
+                "banners": [
+                    match.get("data", "")[:MAX_LINE_LENGTH]
+                    for match in results.get("matches", [])[:MAX_RESULTS]
+                ],
+                "note": "Search via Shodan query"
             }
+        except Exception as e:
+            return {"tool": "shodan", "error": f"search() failed: {str(e)}"}
 
-        except APIError as fallback_error:
-            return JSONResponse(
-                status_code=500,
-                content={"error": f"Fallback Shodan search error: {str(fallback_error)}"}
-            )
+    elif "ip" in inputs:
+        ip = inputs["ip"]
+        if not is_valid_public_ip(ip):
+            return {"tool": "shodan", "error": "Invalid IP format"}
+        try:
+            host = api.host(ip)
+            return {...}  # your host logic
+        except Exception as e:
+            return {"tool": "shodan", "error": f"host() failed: {str(e)}"}
 
-    return JSONResponse(status_code=500, content={"error": "Unknown Shodan error."})
+    else:
+        return {"tool": "shodan", "error": "Missing 'ip' or 'query' input"}
 
-def run_whois(inputs):
-    target = inputs.get("target")
-    if not target:
-        return {"tool": "whois", "error": "Target is required"}
-
+def run_whois(domain):
+    start_time = time.time()
     try:
-        result = subprocess.run(["whois", target], capture_output=True, text=True, timeout=15)
-        return {
+        result = subprocess.run(
+            ["whois", domain],
+            capture_output=True,
+            text=True,
+            timeout=20
+        )
+        raw_output = result.stdout
+
+        # Patterns
+        registrar = re.search(r"Registrar:\s*(.+)", raw_output, re.IGNORECASE)
+        creation = re.search(r"(?:Creation Date|Registered On):\s*(.+)", raw_output, re.IGNORECASE)
+        expiry = re.search(r"(?:Registry Expiry Date|Registrar Registration Expiration Date|Expiration Date):\s*(.+)", raw_output, re.IGNORECASE)
+        name_servers = re.findall(r"Name Server:\s*(.+)", raw_output, re.IGNORECASE)
+        status = re.findall(r"Domain Status:\s*([^\s]+)", raw_output, re.IGNORECASE)
+
+        # Build table-style dict
+        output = {
             "tool": "whois",
-            "target": target,
-            "output": result.stdout.strip()
+            "domain": domain.lower(),
+            "registrar": registrar.group(1).strip() if registrar else "",
+            "creation": creation.group(1).strip() if creation else "",
+            "expiry": expiry.group(1).strip() if expiry else "",
+            "name_servers": [ns.strip() for ns in name_servers],
+            "status": [s.strip() for s in status],
+            "duration_sec": round(time.time() - start_time, 2)
         }
+
+        return output
+
+    except subprocess.TimeoutExpired:
+        return {"error": f"WHOIS lookup for {domain} timed out"}
     except Exception as e:
-        return {"tool": "whois", "target": target, "error": str(e)}
+        return {"error": str(e)}
 
 def run_dnsx(inputs):
     domains = inputs.get("domains", [])
