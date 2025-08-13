@@ -161,37 +161,41 @@ def run_subfinder(inputs):
         return JSONResponse(status_code=500, content={"error": f"Parsing subfinder output failed: {str(e)}"})
 
 def run_shodan(inputs):
+    ip = inputs.get("ip", "")
+    if not ip:
+        return JSONResponse(status_code=400, content={"error": "IP is required for Shodan."})
+
+    if not is_valid_public_ip(ip) or not is_valid_ip_for_shodan(ip):
+        return {
+            "tool": "shodan",
+            "ip": ip,
+            "note": "Skipping private, reserved, or dummy IP — Shodan only supports public, meaningful IPs."
+        }
+
+    try:
+        ipaddress.ip_address(ip)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"error": f"Invalid IP format: {ip}"})
+
     api = Shodan(SHODAN_API_KEY)
 
-    if "query" in inputs:
-        query = inputs["query"]
-        try:
-            results = api.search(query)
-            return {
-                "tool": "shodan",
-                "query": query,
-                "matches_count": len(results.get("matches", [])),
-                "banners": [
-                    match.get("data", "")[:MAX_LINE_LENGTH]
-                    for match in results.get("matches", [])[:MAX_RESULTS]
-                ],
-                "note": "Search via Shodan query"
-            }
-        except Exception as e:
-            return {"tool": "shodan", "error": f"search() failed: {str(e)}"}
+    try:
+        host = api.host(ip)
+        banners = [item.get("data", "")[:MAX_LINE_LENGTH] for item in host.get("data", [])[:MAX_RESULTS]]
+        return {
+            "tool": "shodan",
+            "ip": ip,
+            "organization": host.get("org"),
+            "os": host.get("os"),
+            "ports": host.get("ports", []),
+            "banners": banners,
+            "country": host.get("country_name"),
+            "hostnames": host.get("hostnames"),
+            "matches_count": len(host.get("data", []))
+        }
 
-    elif "ip" in inputs:
-        ip = inputs["ip"]
-        if not is_valid_public_ip(ip):
-            return {"tool": "shodan", "error": "Invalid IP format"}
-        try:
-            host = api.host(ip)
-            return {...}  # your host logic
-        except Exception as e:
-            return {"tool": "shodan", "error": f"host() failed: {str(e)}"}
-
-    else:
-        return {"tool": "shodan", "error": "Missing 'ip' or 'query' input"}
+    except APIError as e:
+        return JSONResponse(status_code=500, content={"error": f"Shodan host() error: {str(e)}"})
 
 def run_whois(domain):
     start_time = time.time()
@@ -211,7 +215,6 @@ def run_whois(domain):
         name_servers = re.findall(r"Name Server:\s*(.+)", raw_output, re.IGNORECASE)
         status = re.findall(r"Domain Status:\s*([^\s]+)", raw_output, re.IGNORECASE)
 
-        # Build table-style dict
         output = {
             "tool": "whois",
             "domain": domain.lower(),

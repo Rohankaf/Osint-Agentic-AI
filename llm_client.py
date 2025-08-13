@@ -1,4 +1,4 @@
-import os
+import os 
 import json
 import time
 from datetime import datetime
@@ -10,9 +10,14 @@ import argparse
 from llm_gpt import ask_gpt
 from llm_gemini import ask_gemini
 
-# Config and Constants
-model = None
-COST_PER_1K_TOKENS = {"claude": 0.25, "gpt": 0.0015, "gemini": 0.00025}
+model = None 
+
+COST_PER_1K_TOKENS = {
+    "claude": 0.25,
+    "gpt": 0.0015,
+    "gemini": 0.00025
+}
+
 llm_token_usage = {"claude": 0, "gpt": 0, "gemini": 0}
 llm_cost_usage = {"claude": 0.0, "gpt": 0.0, "gemini": 0.0}
 total_cost_limit = 1.0
@@ -22,8 +27,11 @@ CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
 MCP_URL = "http://127.0.0.1:8000/run_tool"
 TRANSCRIPT_DIR = "logs"
 os.makedirs(TRANSCRIPT_DIR, exist_ok=True)
+
 client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
+
 ALLOWED_TOOLS = {"theHarvester", "subfinder", "dnsx", "whois", "shodan"}
+
 
 PRE_PROCESSING_PROMPT = """You are an OSINT task planner.
 
@@ -127,6 +135,7 @@ Do not use natural language strings. Use only these tools:
 - shodan
 """
 
+
 def ask_llm(system_prompt, user_prompt):
     global model
     prompt_tokens = len(system_prompt.split()) + len(user_prompt.split())
@@ -145,16 +154,17 @@ def ask_llm(system_prompt, user_prompt):
         )
         output = response.content[0].text.strip()
 
+    
     llm_token_usage[model] += prompt_tokens
     cost = (prompt_tokens / 1000.0) * COST_PER_1K_TOKENS[model]
     llm_cost_usage[model] += cost
 
+    
     print(f"\n💬 [LLM Used: {model}]")
     print(f"Tokens used: {prompt_tokens}")
     print(f"Estimated cost: ${round(cost, 6)}")
 
     return output
-
 
 def safe_parse_json(text):
     try:
@@ -168,7 +178,6 @@ def safe_parse_json(text):
                 continue
     return None
 
-
 def run_tool(tool, inputs):
     try:
         if tool == "shodan":
@@ -177,7 +186,9 @@ def run_tool(tool, inputs):
                 try:
                     ip_obj = ipaddress.ip_address(query.strip())
                     if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved or ip_obj.is_multicast:
-                        return {"error": f"Shodan cannot scan private/reserved IPs ({query})."}
+                        return {
+                            "error": f"Shodan cannot scan private/reserved IPs ({query}). A Shodan Premium Tier is required for some advanced scans."
+                        }
                 except ValueError:
                     return {"error": f"Invalid IP address for Shodan: {query}"}
 
@@ -185,7 +196,6 @@ def run_tool(tool, inputs):
         return response.json()
     except Exception as e:
         return {"error": f"Tool call failed: {str(e)}"}
-
 
 def filter_supported_tools(tool_plan, original_domain=None):
     cleaned = []
@@ -218,13 +228,12 @@ def filter_supported_tools(tool_plan, original_domain=None):
 
         elif tool == "shodan":
             query = inputs.get("query") or inputs.get("ip") or inputs.get("domain") or inputs.get("target")
-            if isinstance(query, str) and query.strip():
-                query = query.strip()
+            if isinstance(query, str):
                 try:
-                    ip = str(ipaddress.ip_address(query))
+                    ip = str(ipaddress.ip_address(query.strip()))
                     cleaned.append({"tool": "shodan", "inputs": {"ip": ip}})
                 except ValueError:
-                    cleaned.append({"tool": "shodan", "inputs": {"query": query}})
+                    pass  
 
         elif tool == "whois":
             target = None
@@ -240,10 +249,7 @@ def filter_supported_tools(tool_plan, original_domain=None):
                         break
             if target:
                 cleaned.append({"tool": "whois", "inputs": {"target": target}})
-
     return cleaned
-
-
 def reflect_on_plan(user_prompt, plan, memory):
     payload = {
         "goal": user_prompt,
@@ -264,7 +270,6 @@ def reflect_on_plan(user_prompt, plan, memory):
             return parsed["plan"]
     return {"status": "fallback", "raw": output}
 
-
 def reflect_on_results(user_prompt, results, memory):
     payload = {
         "goal": user_prompt,
@@ -279,6 +284,7 @@ def reflect_on_results(user_prompt, results, memory):
         if parsed["status"] == "needs_more":
             parsed.setdefault("next_plan", [])
 
+            
             dnsx_ips = []
             for r in results:
                 if r["tool"] != "dnsx":
@@ -294,6 +300,7 @@ def reflect_on_results(user_prompt, results, memory):
             for ip in sorted(set(dnsx_ips)):
                 parsed["next_plan"].append({"tool": "shodan", "inputs": {"query": ip}})
 
+            
             original_domain = extract_original_domain_from_tool_plan(
                 memory.get("tool_plan_history", [])[-1] if memory.get("tool_plan_history") else []
             )
@@ -303,6 +310,7 @@ def reflect_on_results(user_prompt, results, memory):
                     "tool": "dnsx",
                     "inputs": {"domains": sorted(set(subdomains))}
                 })
+
         return parsed
 
     return {"status": "fallback", "raw": output}
@@ -313,12 +321,10 @@ def extract_original_domain_from_tool_plan(plan):
         return ""
     for step in plan:
         inputs = step.get("inputs", {})
-        for key in ["domain", "target", "query", "ip"]:
-            value = inputs.get(key)
-            if isinstance(value, str) and value.strip():
-                return value.strip().lower()
+        domain = inputs.get("domain") or inputs.get("target")
+        if isinstance(domain, str) and domain.strip():
+            return domain.strip().lower()
     return ""
-
 
 def extract_subdomains(results, original_domain):
     subdomains = set()
@@ -331,10 +337,8 @@ def extract_subdomains(results, original_domain):
                         subdomains.add(sub_clean)
     return list(subdomains)
 
-
 def parse_next_plan(plan):
     return safe_parse_json(plan) if isinstance(plan, str) else plan
-
 
 def save_final_llm_cost_log():
     if all(cost == 0 for cost in llm_cost_usage.values()):
@@ -353,6 +357,7 @@ def save_final_llm_cost_log():
 
     print(f"\n Final LLM cost log saved to {log_path}")
 
+######## MAIN #########
 def main():
     global model
 
@@ -363,25 +368,15 @@ def main():
 
     model = args.model
     user_prompt = args.prompt.strip()
+
     if not user_prompt:
         print("⚠️ Please enter a valid OSINT prompt.")
         return
 
     start_time = datetime.now()
-    timestamp = start_time.strftime('%Y%m%d_%H%M%S')
+    timestamp = start_time.strftime('%Y-%m-%d_%H-%M-%S')
 
-    transcript = {
-        "user_prompt": user_prompt,
-        "start_time": str(start_time),
-        "steps": [],
-        "loops": [],
-        "llm_usage": {},
-        "final_summary": "",
-        "end_time": "",
-        "duration_total_sec": 0,
-        "timestamp": timestamp
-    }
-
+    transcript = {"user_prompt": user_prompt, "start_time": str(start_time), "steps": []}
     short_term_memory = {
         "user_prompt": user_prompt,
         "tool_plan_history": [],
@@ -390,7 +385,7 @@ def main():
     }
 
     loops = 0
-    max_loops = 3
+    max_loops = 3 ####### LIMIT 
     already_run = set()
 
     try:
@@ -411,10 +406,10 @@ def main():
 
     while loops < max_loops:
         loops += 1
-        print(f"\n🔁 Loop {loops} - Executing tool plan...")
-        print("\nCurrent Tool Plan:\n", json.dumps(tool_plan, indent=2))
+        print(f"\n Loop {loops} - Executing tool plan...")
+        
 
-        loop_result = {"loop": loops, "tools": []}
+        print("\n Current Tool Plan:\n", json.dumps(tool_plan, indent=2))
         all_results = []
 
         for step in tool_plan:
@@ -422,29 +417,26 @@ def main():
             inputs = step["inputs"]
             key = (tool, json.dumps(inputs, sort_keys=True))
             if key in already_run:
-                print(f"Skipping already run: {tool} with {inputs}")
+                print(f" Skipping already run: {tool} with {inputs}")
                 continue
-
             already_run.add(key)
             print(f"\n⚙️ Running {tool} with inputs: {inputs}")
             t0 = time.time()
             result = run_tool(tool, inputs)
             t1 = time.time()
-
-            print(f"Result:\n{json.dumps(result, indent=2)}")
+            print(f" Result:\n{json.dumps(result, indent=2)}")
             all_results.append({"tool": tool, "inputs": inputs, "result": result})
-
-            loop_result["tools"].append({
-                "tool": tool,
+            transcript["steps"].append({
+                "step": f"run_{tool}",
                 "inputs": inputs,
                 "output": result,
                 "duration_sec": round(t1 - t0, 2)
             })
 
-        transcript["loops"].append(loop_result)
         short_term_memory["tool_plan_history"].append(tool_plan)
         short_term_memory["tool_results_history"].append(all_results)
 
+        
         result_review = reflect_on_results(user_prompt, all_results, short_term_memory)
         short_term_memory["reflections"].append({
             "type": "result",
@@ -461,47 +453,44 @@ def main():
             if not tool_plan:
                 print("⚠️ No valid tools left after reflection.")
                 break
-        else:
+        elif not isinstance(result_review, dict):
             print("⚠️ Invalid result reflection. Exiting.")
             break
+        else:
+            print(" LLM reflection:\n", result_review.get("raw"))
 
     all_results_flat = [r for loop in short_term_memory["tool_results_history"] for r in loop]
     try:
         post_output = ask_llm(POST_PROCESSING_PROMPT, json.dumps(all_results_flat, indent=2))
     except Exception as e:
-        post_output = f"LLM summary failed: {e}"
+        post_output = f" LLM summary failed: {e}"
 
-    # Final summary and save
-    print("\n📝 Final Summary:\n", post_output)
-    transcript["final_summary"] = post_output
+    print("\n Final Summary:\n", post_output)
+
+    transcript["steps"].append({"step": "summary", "summary": post_output})
     transcript["end_time"] = str(datetime.now())
     transcript["duration_total_sec"] = round((datetime.now() - start_time).total_seconds(), 2)
+    transcript["start_time"] = str(start_time)  
     transcript["llm_usage"] = {
-        m: {
-            "tokens_used": llm_token_usage[m],
-            "estimated_cost_usd": round(llm_cost_usage[m], 6)
-        } for m in llm_token_usage if llm_token_usage[m] > 0
+    m: {
+        "tokens_used": llm_token_usage[m],
+        "estimated_cost_usd": round(llm_cost_usage[m], 6)
     }
+    for m in llm_token_usage if llm_token_usage[m] > 0
+}
 
-    # File save paths
-    transcript_file = f"{TRANSCRIPT_DIR}/transcript_{timestamp}.json"
-    memory_file = f"{TRANSCRIPT_DIR}/memory_{timestamp}.json"
-    summary_file = f"{TRANSCRIPT_DIR}/summary_{timestamp}.txt"
-
-    # Save files
-    with open(transcript_file, "w") as f:
+    with open(f"{TRANSCRIPT_DIR}/transcript_{timestamp}.json", "w") as f:
         json.dump(transcript, f, indent=2)
-    with open(memory_file, "w") as f:
+    with open(f"{TRANSCRIPT_DIR}/memory_{timestamp}.json", "w") as f:
         json.dump(short_term_memory, f, indent=2)
-    with open(summary_file, "w") as f:
+    with open(f"{TRANSCRIPT_DIR}/summary_{timestamp}.txt", "w") as f:
         f.write(post_output)
 
-    save_final_llm_cost_log()
+    save_final_llm_cost_log()  
 
-    print("\n✅ Saved the following files:")
-    print(f" Transcript: {transcript_file}")
-    print(f" Memory    : {memory_file}")
-    print(f" Summary   : {summary_file}")
+    print(f"\n Saved transcript and memory to logs/")
+
 
 if __name__ == "__main__":
     main()
+    
