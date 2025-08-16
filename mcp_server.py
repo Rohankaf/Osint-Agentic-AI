@@ -1,14 +1,11 @@
 import os
 import subprocess
 import json
-import re
-import time
 import ipaddress
 from dotenv import load_dotenv
 from shodan import Shodan, APIError
 from fastapi import FastAPI
 from pydantic import BaseModel
-from datetime import datetime
 from fastapi.responses import JSONResponse
 
 load_dotenv()
@@ -195,43 +192,55 @@ def run_shodan(inputs):
         }
 
     except APIError as e:
+        error_msg = str(e).lower()
+        plan_issue_terms = ["upgrade your api plan", "requires api plan", "access denied", "not allowed", "403", "not permitted"]
+
+        if any(term in error_msg for term in plan_issue_terms):
+            try:
+                results = api.search(f"ip:{ip}")
+                matches = results.get("matches", [])
+                banners = [match.get("data", "")[:MAX_LINE_LENGTH] for match in matches[:MAX_RESULTS]] 
+
+                if not matches:
+                    return {
+                        "tool": "shodan",
+                        "ip": ip,
+                        "note": "Fallback search returned no results — API limit or IP not indexed."
+                    }
+
+                return {
+                    "tool": "shodan",
+                    "ip": ip,
+                    "banners": banners,
+                    "matches_count": len(matches),
+                    "note": "Used fallback search() due to limited API plan"
+                }
+
+            except APIError as fallback_error:
+                return JSONResponse(
+                    status_code=500,
+                    content={
+                        "error": f"Fallback search also failed: {str(fallback_error)}",
+                        "hint": "Upgrade Shodan API plan or ensure the IP is indexed"
+                    }
+                )
+
         return JSONResponse(status_code=500, content={"error": f"Shodan host() error: {str(e)}"})
 
-def run_whois(domain):
-    start_time = time.time()
+def run_whois(inputs):
+    target = inputs.get("target")
+    if not target:
+        return {"tool": "whois", "error": "Target is required"}
+
     try:
-        result = subprocess.run(
-            ["whois", domain],
-            capture_output=True,
-            text=True,
-            timeout=20
-        )
-        raw_output = result.stdout
-
-        # Patterns
-        registrar = re.search(r"Registrar:\s*(.+)", raw_output, re.IGNORECASE)
-        creation = re.search(r"(?:Creation Date|Registered On):\s*(.+)", raw_output, re.IGNORECASE)
-        expiry = re.search(r"(?:Registry Expiry Date|Registrar Registration Expiration Date|Expiration Date):\s*(.+)", raw_output, re.IGNORECASE)
-        name_servers = re.findall(r"Name Server:\s*(.+)", raw_output, re.IGNORECASE)
-        status = re.findall(r"Domain Status:\s*([^\s]+)", raw_output, re.IGNORECASE)
-
-        output = {
+        result = subprocess.run(["whois", target], capture_output=True, text=True, timeout=15)
+        return {
             "tool": "whois",
-            "domain": domain.lower(),
-            "registrar": registrar.group(1).strip() if registrar else "",
-            "creation": creation.group(1).strip() if creation else "",
-            "expiry": expiry.group(1).strip() if expiry else "",
-            "name_servers": [ns.strip() for ns in name_servers],
-            "status": [s.strip() for s in status],
-            "duration_sec": round(time.time() - start_time, 2)
+            "target": target,
+            "output": result.stdout.strip()
         }
-
-        return output
-
-    except subprocess.TimeoutExpired:
-        return {"error": f"WHOIS lookup for {domain} timed out"}
     except Exception as e:
-        return {"error": str(e)}
+        return {"tool": "whois", "target": target, "error": str(e)}
 
 def run_dnsx(inputs):
     domains = inputs.get("domains", [])
